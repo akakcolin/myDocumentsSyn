@@ -1,0 +1,74 @@
+\documentclass[a4paper, 12pt, CJKnumber, UTF8, openany,nofonts, fancyhdr]{ctexbook}
+\usepackage{my_report} 
+
+%% make our own references so we can have hperlinks in pdfs
+\newcommand{\refto}[1]{ %e.g. \refto{name}
+\index{#1}%
+[\pageref{#1}] #1}
+
+%% a colored box around quotes
+%% boxed{boxcolor}{textcolor}{width}{text}
+%% boxed{yellow}{black}{4.6in}{text}
+\providecommand\quoteme[4]{
+  \begin{center}
+    \fcolorbox{#1}{#2}{
+      \begin{minipage}{#3}
+        \normalsize
+        {#4}\hfill
+        \end{minipage}}\\
+  \end{center}}
+
+\graphicspath{{figures/}}
+
+%%% Maketitle metadata
+\newcommand{\horrule}[1]{ \rule{\linewidth}{#1}}     % Horizontal rule
+
+\title{
+        %\vspace{-1in}  
+        \usefont{OT1}{bch} {b}{n}
+        \normalfont \normalsize \textsc{} \\ [25pt]
+        \horrule{1.5pt} \\[0.4cm]
+        \huge 高斯过程的学习记录\\
+        \horrule{1.5pt} \\[0.5cm]
+}      
+\author {
+        \normalfont                                 \normalsize
+        小灰merlin\\[-2pt]      \normalsize
+        \today
+} 
+\date{}
+
+\begin{document}
+\linespread{1.69}\selectfont
+\maketitle
+\eject
+\tableofcontents
+\eject
+
+\frontmatter % 用罗马数字页码
+\linespread{1.4}
+
+
+\selectfont
+\renewcommand*{\contentsname}{目\qquad 录}
+\renewcommand*\listfigurename{\textbf{插\ 图\ 目\ 录}}
+\renewcommand*\listtablename{\textbf{表\ 格\ 目\ 录}}
+\renewcommand*\bibname{\textbf{参\ 考\ 文\ 献}}
+%%\tableofcontents
+
+%\clearpage
+%\linespread{1.69}\selectfont
+%\listoffigures
+%\clearpage
+%\listoftables
+%表目最后可能会加一个空白页，暂时无解。可以用Acrobat删除之
+%\clearpage
+\mainmatter % 正文开始，数字页码 ＆ 页眉
+\linespread{1.5}\selectfont
+\setlength{\topskip}{0mm}
+\newcommand{\upcite}[1]{\textsuperscript{\textsuperscript{\cite{#1}}}}
+
+\section{开始}
+test
+某种意思上，我们追求的是计算效率（更快更好更强），dftb这块需要的是一个更快更稳定的对角化求解的方案，对称化只是其中一种方式。
+\end{document}
