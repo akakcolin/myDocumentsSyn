@@ -69,5 +69,207 @@
 \newcommand{\upcite}[1]{\textsuperscript{\textsuperscript{\cite{#1}}}}
 
 \section{开始}
-test
+高斯过程学习
+gaussian process
+
+是一系列关于连续域的随机变量的联合，其中任意有限个不同的时间
+或空间上的随机变量的联合都是高斯分布
+
+GP 需要满足：对任意个点联合需要服从多元高斯分布
+，这个分布需要一个确定的mean和确定的convariance
+因此，一个GP可以被mean和covariance function 共同唯一确定
+
+mean function决定样本出现的整体位置，提供基准
+
+covariance function 就被称为核函数kernel，原因就是它捕捉了不同
+输入点支架的关系，并且反映了在之后样本的位置上，
+
+Squared exponential 
+\begin{equation}
+K_{SE}(x,x') = exp(-\frac{d^2}{2l^2}), d = x-x'
+\end{equation}
+
+举一个例子，无噪声的Bayesian linear regression 模型
+$f(x) =\phi(x)^Tw$ 因此我们的mean function和covariance function就可以得到，
+\begin{equation}
+  \begin{aligned} \mu(\boldsymbol{x}) &=\mathbb{E}[f(\boldsymbol{x})]=\boldsymbol{\phi}(\boldsymbol{x})^{\mathrm{T}} \mathbb{E}[\boldsymbol{w}]=0 \\ k\left(\boldsymbol{x}, \boldsymbol{x}^{\prime}\right) &=\mathbb{E}\left[f(\boldsymbol{x}) f\left(\boldsymbol{x}^{\prime}\right)\right]=\boldsymbol{\phi}(\boldsymbol{x})^{\mathrm{T}} \mathbb{E}\left[\boldsymbol{w} \boldsymbol{w}^{\mathrm{T}}\right] \boldsymbol{\phi}\left(\boldsymbol{x}^{\prime}\right)=\boldsymbol{\phi}(\boldsymbol{x})^{\mathrm{T}} \Sigma_{p} \boldsymbol{\phi}\left(\boldsymbol{x}^{\prime}\right) \end{aligned}
+\end{equation}
+
+\begin{equation}
+f(\boldsymbol{x}) \sim \mathcal{G P}\left(0, \boldsymbol{\phi}(\boldsymbol{x})^{\mathrm{T}} \Sigma_{p} \boldsymbol{\phi}\left(\boldsymbol{x}^{\prime}\right)\right)
+\end{equation}
+
+\begin{equation}
+\hat{\boldsymbol{\mu}}_{i}=\sum_{j=1}^{n} \alpha_{j} k\left(\boldsymbol{x}_{j}, \boldsymbol{z}_{i}\right)
+\end{equation}
+最终结果可以看作是covariance function（以训练点为中心）的线性组合。
+
+正态分布的概率密度函数
+\begin{equation}
+p(x)=\frac{1}{\sqrt{2 \pi \sigma^{2}}} e^{-\frac{x^{2}}{2 \sigma^{2}}}
+\end{equation}
+
+高斯分布的累积密度函数
+\begin{equation}
+c(x)=\frac{1}{\sqrt{2 \pi \sigma^{2}}} \int_{-\infty}^{x} \exp \left(-\frac{(t-\mu)^{2}}{2 \sigma^{2}}\right) d t=\frac{1}{\sqrt{2 \pi \sigma^{2}}} \int_{-\infty}^{x} \exp \left(-\left(\frac{t-\mu}{\sqrt{2} \sigma}\right)^{2}\right) d t=\frac{1}{2}\left[1+\operatorname{erf}\left(\frac{x-\mu}{\sigma \sqrt{2}}\right)\right]
+\end{equation}
+
+一些性质：
+期望，方差
+
+对称性
+密度函数无限可微
+独立随机变量的和差积商
+两个满足独立高斯分布的随机变量的和与差都仍然是高斯分布
+两个满足独立高斯分布的随机变量的乘积不是高斯分布，但是两个高斯密度函数的
+乘积仍然可以做成一个高斯的密度函数
+
+\begin{equation}
+\begin{aligned} p(X) &=\mathcal{N}\left(\mu_{1}, \sigma_{1}^{2}\right) \times \mathcal{N}\left(\mu_{2}, \sigma_{2}^{2}\right) \\ & \propto \exp \left(-\frac{\left(x-\mu_{1}\right)^{2}}{2 \sigma_{1}^{2}}\right) \times \exp \left(-\frac{\left(x-\mu_{2}\right)^{2}}{2 \sigma_{2}^{2}}\right) \\ & \propto \exp \left(-\frac{\sigma_{1}^{2}+\sigma_{2}^{2}}{2 \sigma_{1}^{2} \sigma_{2}^{2}}\left(x-\frac{\sigma_{2}^{2} \mu_{1}+\sigma_{1}^{2} \mu_{2}}{\sigma_{1}^{2}+\sigma_{2}^{2}}\right)^{2}\right) \end{aligned}
+\end{equation}
+而随机变量x仍是一个高斯分布，这里
+
+\begin{equation}
+\begin{array}{l}{\mu_{x}=\left(\sigma_{1}^{-2}+\sigma_{2}^{-2}\right)^{-1}\left(\sigma_{1}^{-2} \mu_{1}+\sigma_{2}^{-2} \mu_{2}\right)} \\ {\sigma_{x}^{2}=\left(\sigma_{1}^{-2}+\sigma_{2}^{-2}\right)^{-1}}\end{array}
+\end{equation}
+
+似然函数就是那个给定N个观测点后代入概率密度函数的乘积
+高斯分布的共轭分布就是它自己，所谓的封闭性
+加快贝叶斯推断，因为后验分布可以直接根据先验和似然的表达，
+直接得到后验的具体显示解析表达式。
+
+如果x1与x2是统计独立，那么二者之间的协方差为0，反过来不成立，即如果x1与x2
+的协方差为0，二者并不一定是统计独立的。这里有个相关性
+相关系数r：
+
+\begin{equation}
+r=\frac{\operatorname{cov}\left(X_{1}, X_{2}\right)}{\sqrt{\operatorname{var}\left(X_{1}\right) \operatorname{var}\left(X_{2}\right)}}
+\end{equation}
+
+相关性为0的两个随机变量称为不相关的，这只是表明两随机变量之间没有线性相关性
+
+多维高斯分布的概率密度函数
+
+\begin{equation}
+f(\boldsymbol{x})=\frac{1}{(2 \pi)^{p / 2}|\Sigma|^{1 / 2}} \exp \left(-\frac{1}{2}(\boldsymbol{x}-\boldsymbol{\mu})^{T} \Sigma^{-1}(\boldsymbol{x}-\boldsymbol{\mu})\right)
+\end{equation}
+
+与一维的高斯密度函数对比：
+指数函数外面，方差协方差，开个根号然后要行列式其实算的是多维情况下的
+标准差。指数内，除以所谓的方差在高维下就是乘以一个协方差矩阵的逆，
+而一维情况下的平方在高维下就是二项式。
+
+特点：
+对称性，体现在协方差矩阵的对称性。 协方差矩阵还具有半正定性
+
+通俗来讲：一个矩阵若是服从矩阵高斯分布，那么将它列向量化之后，它可以
+满足一个多维的高斯分布。这个多维高斯分布，均值向量为原均值矩阵的列向量化，
+而新的协方差矩阵却是由原来的列协方差矩阵和行协方差矩阵的Kronecker乘积构成
+
+从简单的贝叶斯线性回归开始
+
+回归分析目的在于了解两个或多个变数间是否相关
+
+\begin{equation}
+\begin{array}{l}{\text { Standard Linear Regression with Gaussian noise }} \\ {f(\boldsymbol{x})=\boldsymbol{x}^{T} \boldsymbol{w}, y=f(\boldsymbol{x})+\varepsilon}\end{array}
+\end{equation}
+
+把输入投影到特征空间
+具体来讲就是先用一些基函数将输入投影到高维空间，然后再应用之前的Bayesian linear
+regression来处理
+
+给定n个训练点，每个点都用基函数表示，则
+\begin{equation}
+f(\boldsymbol{x})=\sum_{i=1}^{n} w_{i} \phi\left(\left\|\boldsymbol{x}-\boldsymbol{x}_{i}\right\|\right)=\boldsymbol{\phi}(\boldsymbol{x})^{\mathrm{T}} \boldsymbol{w}
+\end{equation}
+
+下面构造一个大的矩阵为所有的训练输入
+\begin{equation}
+\Phi(X)=\left[ \begin{array}{ccc}{\phi\left(\left\|x_{1}-x_{1}\right\|\right)} & {\cdots} & {\phi\left(\left\|x_{1}-\boldsymbol{x}_{n}\right\|\right)} \\ {\vdots} & {\ddots} & {\vdots} \\ {\phi\left(\left\|\boldsymbol{x}_{n}-\boldsymbol{x}_{1}\right\|\right)} & {\cdots} & {\phi\left(\left\|\boldsymbol{x}_{n}-\boldsymbol{x}_{n}\right\|\right)}\end{array}\right]=\left[ \begin{array}{c}{\boldsymbol{\phi}\left(\boldsymbol{x}_{1}\right)^{\mathrm{T}}} \\ {\vdots} \\ {\boldsymbol{\phi}\left(\boldsymbol{x}_{n}\right)^{\mathrm{T}}}\end{array}\right]
+\end{equation}
+
+\begin{equation}
+\begin{aligned} p\left(f_{*} | \boldsymbol{z}, \mathcal{D}\right)=\mathcal{N}\left(\boldsymbol{\phi}_{*}^{\mathrm{T}} \Sigma_{p} \Phi\left(K+\sigma_{n}^{2} \mathbf{I}\right)^{-1} \boldsymbol{y},\right.\\ \boldsymbol{\phi}_{*}^{\mathrm{T}} \Sigma_{p} \boldsymbol{\phi}_{*}-\boldsymbol{\phi}_{*}^{\mathrm{T}} \Sigma_{p} \Phi\left(K+\sigma_{n}^{2} \mathbf{I}\right)^{-1} \Phi^{T} \Sigma_{p} \boldsymbol{\phi}_{*} ) \end{aligned}
+\end{equation}
+
+这里的k就是kernel，也可以叫做covariance function 
+\begin{equation}
+k\left(\boldsymbol{x}, \boldsymbol{x}^{\prime}\right)=\boldsymbol{\phi}(\boldsymbol{x})^{\mathrm{T}} \Sigma_{p} \boldsymbol{\phi}\left(\boldsymbol{x}^{\prime}\right)
+\end{equation}
+
+由于 $\Sigma_p$是个半正定矩阵，利用svd分解 $\Sigma_{p}=U D U^{\mathrm{T}}$
+最后得到
+
+\begin{equation}
+k\left(\boldsymbol{x}, \boldsymbol{x}^{\prime}\right)=\psi(\boldsymbol{x}) \cdot \psi\left(\boldsymbol{x}^{\prime}\right)
+\end{equation}
+
+这里的kernel已经包含了特征空间的所有信息，因而这个集成了所有特征空间信息的kernel
+是一种原来方法的简单替代，将之前的一个复杂问题转化成了一个考虑kernel的问题。
+
+
+gp过程的步骤
+\begin{itemize}
+\item 给定mean 和kernel ，0，squared exponential，设置初始值
+\item  给定想要产生的样本函数定义域
+\item 计算对应的mean function 的均值向量，M，kernel的covariance matrix，记为c
+\item 对c做svd分解
+\item 从标准高斯分布产生n个点的样本，
+  \item 利用$$
+z_{g p}=u \sqrt{s} g_{n}+M
+$$ 就可以生成一个给定具体mean 和kernel的gp样本
+ \end{itemize}
+
+ 如何处理mean function的设定问题。其实这是理论上的重要问题，但实际经常默认为0
+
+ 因为我们的假定是：给定样本来自一个参数待定的确定形式gp的一个样本，这里假定是来自
+ 高斯过程，不是说一定需要来自高斯分布，根据训练集，学习得出给定mean 和kernel
+ 的形式所对应具体的超参数。
+
+ 可以是非零mean function，然后这需要增加待确定参数，增加计算量，而效果一般而言没有本质提升
+
+
+ 随机过程是对概率分布的升维。这里的升维的意思是，随机过程可以看作是概率分布概念的
+ 延拓，
+
+ 验证所谓的正态验证后答案是否的数据，是不是可以真的来自一个gp样本的有限实现，或者说
+ 根据那个所谓的非正态的数据，是否可以找到一个可能产生，或者最有可能产生这个样本实现的gp呢
+
+ 数据点两两之间的关系是一个更底层和基础的信息源
+
+ mercer定理：任意满足对称性和半正定性的二元函数都能找到hilbert space v 和函数$\phi$\
+ 使得$k(x, y)=\langle\psi(x), \psi(y)\rangle$
+
+
+ 高斯过程首先假设函数服从一个先验分布，然后根据观测数据来约束这个分布，
+ 即基于每个函数与观测样本的相关程度，找出最能反映样本特征的函数
+ 进行更可靠的预测。
+
+ 采样到的每个函数可看作是一个无限长的向量，我们把这个函数看作一个采样的
+ 样本，这个样本有无穷维
+
+ 贝叶斯高斯张量分解
+
+ 用于ml的优势：
+ 第一，张量分解本身存在着非凸优化的问题，采用贝叶斯推断很可能带来更好的解；
+ 第二，由实际数据组织起来的张量存在着不完整性的问题，采用贝叶斯可大大
+ 利用其对于稀疏学习的优势。
+ 第三，在张量分解的过程中能够刻画观测数据的随机性，也能一定程度上避免过拟合
+
+ 贝叶斯推断主要分为随机性采样和确定型参数估计，代表性的算法分别是mcmc和变分推断
+ 相比之下，变分推断比mcmc抽象，在迭代过程中，每代的计算消耗大，不过主要优势
+ 是得到模型近似解的收敛速度快。
+
+ 随机变量x标准化的过程，实际上的消除量纲影响和分布差异的过程。
+ 通过将随机变量的值减去其均值再除以标准差，使得随机变量与其均值的差距可以
+ 用若干个标准差来衡量，从而实现不同随机变量与其对应均值的差距，可以
+ 以一种相对的距离来进行比较。
+
+ 多元高斯分布
+
+ 如果我们通过线性变换，使得随机向量中的每个随机变量彼此独立，则
+ 我们也可以通过独立随机变量概率密度函数之间的关系求出其联合概率密度函数
+
+ 
+
 \end{document}
