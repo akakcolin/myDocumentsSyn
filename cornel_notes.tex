@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{calc}
+\usepackage[top=0.25in,bottom=0.75in,left=0.5in,right=0.5in]{geometry}
+\usepackage{tikz}
+ 
+\newlength{\wholeboxwd}
+    \setlength{\wholeboxwd}{0.99\textwidth}
+\newlength{\wholeboxht}
+    \setlength{\wholeboxht}{0.95\textheight}
+%
+\newlength{\cuewd}
+    \setlength{\cuewd}{0.3\wholeboxwd}
+\newlength{\summht}
+    \setlength{\summht}{0.2\wholeboxht}
+\newlength{\cgridht}
+    \setlength{\cgridht}{\wholeboxht-\summht}
+\newlength{\cgridwd}
+    \setlength{\cgridwd}{\wholeboxwd-\cuewd}
+\newlength{\xorig}
+\newlength{\yorig}
+\setlength{\xorig}{0cm}
+\setlength{\yorig}{0cm}
+ 
+\begin{document}
+ 
+\begin{center}
+\begin{tikzpicture}
+\draw[step=.5cm,gray!80,thin] (\cuewd,\summht) grid (\wholeboxwd,\wholeboxht);
+%% Optional:
+%\draw[step=.25cm,gray!30,thin] (\cuewd,\summht) grid (\wholeboxwd,\wholeboxht);
+% Summary, top:
+\draw [line width=.2pt] (\xorig,\summht) -- (\wholeboxwd,\summht);
+% Grid, left:
+\draw [line width=.2pt] (\cuewd,\summht) -- (\cuewd,\wholeboxht);
+% Draw the big box:
+\draw (\xorig,\yorig) rectangle (\wholeboxwd,\wholeboxht);
+\node[anchor=west] at (0.25,\wholeboxht-1em) {\textbf{Cues:}};
+\node[anchor=west] at (0.25,\summht-1em){\textbf{Summary:}};
+\node[anchor=west,fill=white] at (\cuewd+1em,\wholeboxht-1em) {\textbf{\ Notes:\ }};
+\node[anchor=west] at (0.25,\wholeboxht+2em){%
+    \parbox[t]{\cuewd}{Subject:\par\smallskip Date:}%
+};
+\end{tikzpicture}
+\end{center}
+ 
+\end{document}
