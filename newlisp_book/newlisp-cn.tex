@@ -1,4 +1,19 @@
 \documentclass[cn,11pt]{elegantbook}
+% color definitions for code highlighting - also used manually in document (in for example parseString)
+\definecolor{comment}{rgb}{1,0.55,0}
+\definecolor{string}{rgb}{0.00,0.55,0.55}
+\definecolor{identifier}{rgb}{0.10,0.10,0.44}
+\definecolor{keyword}{rgb}{0.55,0,0}
+
+\lstset{language=Lisp,
+basicstyle=\small\tt,
+identifierstyle=\color{identifier},
+keywordstyle=\color{keyword}\bfseries,
+commentstyle=\color{comment},
+showstringspaces=false,
+breaklines=true,
+morekeywords=define,
+basicstyle=\small}
 
 \title{newlisp：优雅的lisp方言}
 \subtitle{we love newlisp}
@@ -25,16 +40,17 @@
 
 \chapter{newlisp语言介绍}
 
-Newlisp 将和你以前看到的别的LISP会有很大的差别,所以请将他看成一门全新的语
-言.newLISP的最大特点就是自然简洁为应用而生.你不会看到太多的 "高级" 语法,当然更
-不会局限于各种晦涩难懂的教条^_^.我发誓当你真正使用newLISP开始工作的时候,你会发
-现这是你学过的最简单的语言!
+Newlisp将和你以前看到的别的LISP会有很大的差别，所以请将他看成一门全新的语
+言。newLISP的最大特点就是自然简洁为应用而生。你不会看到太多的"高级"语法，当然更
+不会局限于各种晦涩难懂的教条，当你真正使用newLISP开始工作的时候，你会发
+现这是你学过的最简单的语言！
 
-如果你有过编程或者脚本编写的经验,你就会发现newLISP是一个简单易学,功能强大
-的脚本语言.既具有传统LISP的优雅,又具有强大实用性:比如正则表达式,网络通信,
-Unicode支持,多任务,等等.
+如果你有过编程或者脚本编写的经验，你就会发现newLISP是一个简单易学，功能强大
+的脚本语言。既具有传统LISP的优雅，又具有强大实用性：比如正则表达式，网络通信，
+Unicode支持，多任务等等。
 
-如果你没有过编程经验,那就更好了.现在就开始newLISP之旅吧,你一定会不虚此行.
+如果你没有过编程经验，那就更好了。现在就开始newLISP之旅吧。你一定会不虚此行。
+
 
 经过半个世纪的发展,LISP已经成为了一个语系.无论这些LISP方言之间有多少差别,
 他们都遵循了一个至理---"All is Data".
@@ -139,20 +155,20 @@ table-drvien，在代码大全中有专门一章介绍，大意是如果条件�
 
 在newlisp中，提供了key/value的接口允许做到table-driven.
 
-\begin{lstlisting}
-  > (new Tree 'MyTable)
+\begin{lstlisting}[language=shell,numbers=none,nolol]
+>(new Tree 'MyTable)
 MyTable
-> (define (ff) (println "ok"))
+>(define (ff) (println "ok"))
 (lambda () (println "ok"))
-> (MyTable "a" ff)
+>(MyTable "a" ff)
 (lambda () (println "ok"))
-> (MyTable "a")
+>(MyTable "a")
 (lambda () (println "ok"))
 > ((MyTable "a"))
 ok
 "ok"
 
- \end{lstlisting}
+\end{lstlisting}
 
  
 首先定义了一个Tree的子类MyTable,
@@ -165,31 +181,27 @@ ok
 
 创建字典
 首先Tree是一个namesapce(也就是context)，如果想创建一个字典保存key/value结构，需要如下使用
+\begin{lstlisting}
 (new Tree 'MyTable) 
 (MyTable "/home/a.cc" "123:45")
-
+\end{lstlisting}
 这样，其实是创建了一个名为MyTable的context，里面用symbol的形式保存了很多key/value的组合。
 
 
 有个函数，将10进制整数转换成16进制字符串，然后计算长度，如果不够4位，则前面补0.
 
 \begin{lstlisting}
-;; size is the length of returned hex string
-;; if the length of formatted value is less than size,
-;; a few "0" characters will be inserted in front of the string
 (define (hex-str int-val size)
   (let (v (format "%X" int-val))
     (if (< (length v) size)
-	(dotimes (n (- size (length v)))
-		 (push "0" v))
-                 v)))
-               \end{lstlisting}
+    (dotimes (n (- size (length v)))
+    (push "0" v))
+  v)))
+\end{lstlisting}
 
 
 读取了一个csv文件，统计了每秒能读取读少行
 \begin{lstlisting}
-  #!/usr/local/bin/newlisp
-
 (setq t1 (date-value))
 (set 'in-file (open "dw_product_dt.csv" "read"))
 (setq counter 0)
@@ -201,14 +213,12 @@ ok
 (println "totol line number: " counter)
 (println (format "read %lld lines per second" (/ counter duration)))
 (exit)
-
  \end{lstlisting}
 
 \subsection{FFI}
 newLISP has two FFI APIs. The simple API needs no type specifiers but is limited to integers and pointers. The extended API can specify types for return values and parameters and can also be used for floats and structs.
 
 \begin{lstlisting}
-  ; simple FFI interface on Mac OSX
   (import "libc.dylib" "strdup")
   (println (get-string (strdup "hello world")))
 
@@ -225,7 +235,7 @@ newLISP has two FFI APIs. The simple API needs no type specifiers but is limited
 
 在用newlisp创建多个进程模拟客户端进行测试的时候，关闭是个问题，下面的脚本很方便的杀掉所有newlisp进程
 
-\begin{lstlisting}
+\begin{lstlisting}[lisp]
 #!/usr/local/bin/newlisp
 
 (set 'r (exec "pidof newlisp"))
@@ -837,9 +847,17 @@ a^{2}+b^{2} = \elegantpar{c^{2}}{勾股定理
  
  至于负者歌于途，行者休于树，前者呼，后者应，\elegantpar{伛偻提携}{指搀扶着走的小孩子}，往来而不绝者，滁人游也。临溪而渔，溪深而鱼肥。酿泉为酒，泉香而酒洌；山肴野蔌，杂然而前陈者，太守宴也。宴酣之乐，非丝非竹，射者中，弈者胜，觥筹交错，起坐而喧哗者，众宾欢也。苍颜白发，颓然乎其间者，太守醉也。$2\elegantpar{x}{方程的解与数学符号的选择无关}=3$。
 
+ \chapter{FAQ}
+ \begin{custom}{问题}
+   什么是newlisp，能用来做什么呢？
+ \end{custom}
+
+   newlisp 是类lisp的脚本语言，它能做脚本语言所能做的：比如互联网编程，系统管理，处理文本数据
+   调用其他程序等。newlisp是为那些对lisp的优美和强悍的表达能力而着迷的人准备的，同时它也非常容易让人学习
+
 \chapter{常见问题集}
 
-\begin{custom}{问题}
+begin{custom}{问题}
 有没有办法章节用“第一章，第一节，（一）”这种？
 \end{custom}
 
