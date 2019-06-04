@@ -270,6 +270,26 @@ $$ 就可以生成一个给定具体mean 和kernel的gp样本
  如果我们通过线性变换，使得随机向量中的每个随机变量彼此独立，则
  我们也可以通过独立随机变量概率密度函数之间的关系求出其联合概率密度函数
 
- 
+ \section{Bayesian optimizer for atomic structures}
 
+ 改进的地方：
+ 超参数 l 和$\sigma_n$ 可以基于新的数据点同时更新
+ 使用更高级的prior PES，而不是常数
+ 测试其他kernel，比如matern核，表现也很不错
+
+ 注意矩阵的规模，求逆复杂度 $N_c*(3*N+1)$  适合dft计算
+
+ \subsection{Nudged elastic band calculations accelerated with Gaussian
+   process regression}
+
+ The key feature of the NEB algorithm is the `nudging`,
+ a projection which  use to separate the force components perpendicular
+ and parallel to the path from each other. If each image is just moved
+ along the force vector (negative gradient of the energy),
+ they would end up sliding down to the nearest minima. The main idea in the
+ NEB method is to take into account only the force component perpendicular to the path
+ and at the same time control the distribution of the images along
+ the path.
+ The projection of the force required an estimate of the local tangent
+ to the path at the location of each image.
 \end{document}
