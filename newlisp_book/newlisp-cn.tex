@@ -25,7 +25,7 @@ basicstyle=\small}
 
 \extrainfo{Victory won\rq t come to us unless we go to it. --- M. Moore}
 
-\logo{logo.png}
+\logo{figures/newlisp_logo.png}
 \cover{cover.jpg}
 
 \begin{document}
@@ -39,7 +39,7 @@ basicstyle=\small}
 \hypersetup{pageanchor=true}
 
 \chapter{newlisp语言介绍}
-
+newLISP 是一门类 LISP 的，通用用途的脚本语言,
 Newlisp将和你以前看到的别的LISP会有很大的差别，所以请将他看成一门全新的语
 言。newLISP的最大特点就是自然简洁为应用而生。你不会看到太多的"高级"语法，当然更
 不会局限于各种晦涩难懂的教条，当你真正使用newLISP开始工作的时候，你会发
@@ -50,7 +50,6 @@ Newlisp将和你以前看到的别的LISP会有很大的差别，所以请将他
 Unicode支持，多任务等等。
 
 如果你没有过编程经验，那就更好了。现在就开始newLISP之旅吧。你一定会不虚此行。
-
 
 经过半个世纪的发展,LISP已经成为了一个语系.无论这些LISP方言之间有多少差别,
 他们都遵循了一个至理---"All is Data".
@@ -79,13 +78,41 @@ ramming),(3) 定义保留状态的函数 (4)为关联键值创建hash树.
 \end{itemize}
 
 
+\section{数值计算}
+
+计算两个整数的最大公约数的函数
+\begin{lstlisting}
+  (define (MCD a b)
+  (let (r (% b a))
+  (if (= r 0) a (MCD r a))
+  )
+  )
+\end{lstlisting}
+
+但是我们无法计算3个或更多数字的最大公约数,
+为此我们可以使用一个宏处理所有参数
+
+\begin{lstlisting}
+  (define (MCD-aux a b)
+  (let (r (% b a))
+  (if ( = r 0) a (MCD-aux r a))
+  )
+  )
+  (define-macro (MCD)
+  (apply MCD-aux (args) 2))
+  
+\end{lstlisting}
+
+语法: (apply func list [int-reduce])
+
+\subsection{格式}
+ 
 \section{newlisp code patterns}
 
 
 newLISP是一个类似Lisp语言的、用于一般用途的脚本语言。它具有 LISP 语言所有的魔力，但更容易学习和使用。 newLISP是友好的，快速和简小的。
 
 学习Lisp所收获的是如何自由地表达设计思想
-
 
 Lisp意为列表处理(List Processing)，源自设计者John McCarthy于1960年发表的一篇论文《符号表达式的递归函数及其机器计算》。McCarthy在这篇论文中向我们展示了用一种简单的数据结构S表达式(S-expression)来表示代码和数据，并在此基础上构建一种完整的语言。Lisp语言形式简单、内涵深刻，Paul Graham在《Lisp之根源》中将其对编程的贡献与欧几里德对几何的贡献相提并论。
 
@@ -125,21 +152,67 @@ spawn函数会立刻返回，所以等待子进程返回需要使用sync函数�
 由于比较复杂，就不在这里附上我的代码
 此次更新主要涉及
 \begin{enumerate}
-\item 修复 \lstinline|\part| 命令；
-\item 增加 pad 模式；
-\item 增加 mtpro2 宏包选项支持；
-\item 修改参考文献默认为 numbers 格式；
-\item 增加章节介绍 introduction 环境；
-\item 增加章节习题 problemset 环境；
-\item 增加旁注，\lstinline{\elegantpar} 命令（测试）；
-\item 减少公式前后距离；
-\item \lstinline{\equote} 改为 \lstinline{\extrainfo}，并且多行显示；
-\item 完善文档，增加致谢等部分。
+  \item A Modern Built-In API
+  \item Regular expressions PCRE 正则表达PCRE
+  • \item Pattern matching with match and unify 模式匹配 
+  • \item Networking functions: TCP/IP, UDP, HTTP, ICMP 网络函数：TCP/IP， UDP，HTTP， ICMP
+  • \item XML and JSON text processing functions xml和json文本处理函数
+  • \item Advanced Math and classic Statistics functions 数学和经典统计函数
+  • \item Bayesian Statistics functions 贝叶斯统计函数
+  • \item Financial functions  
+  • \item Date and time functions  时间日期函数
+  • \item Fast, unlimited precision integer arithmetic 快速，无限精度整数运算 
+  • \item I/O transparent over local files or remote files via HTTP  通过本地文件的io传输或通过http的远程文件传输
+  • \item Name spaces (contexts) for programming in modules  模块命令空间(contexts)
+  • \item Indexing into nested lists and implicit indexing  列表索引
+  • \item Nested associations 
+  • \item FOOP Functional Object Oriented Programming. See example  函数式面向对象编程
+  • \item Distributed computing support with remote evaluation and HTTP file API  通过api支持分布式计算
+  • \item Multi-processing support with Cilk-style API 通过cilk api的多进程支持
+  \item Expandable API
+  • \item Import functions from C libraries  从c库中导入函数
+  • \item Modules for MySQL, SQLite, Zlib, Crypto, Postscript etc. 支持mysql sqlite zlib crypto postscript等模块 
+  • \item Document generation support for user written modules: newLISPdoc 文档生成模块newlispdoc
+  \item Complete Documentation
+  • \item Users Manual and Reference 用户手册和索引
+  • \item Cookbook for common solutions Code Patterns in newLISP 
+  • \item Introduction (WikiBooks): Introduction to newLISP 介绍图书
+  • \item Training videos; see Documentation page 训练材料
+  \item Advanced Automatic Memory Management 高级自动内存管理
+  • \item ORO memory management oro内存管理
+  • \item Synchronous for repeatable processing times in real-time tasks 
+  • \item Fast and lower on resources compared to other scripting languages 和其他脚本语言比，快速 资源消耗少
+  \item Multiprocessing 多线程编程
+  • \item UNIX forks (not on Windows) unit支持forks 
+  • \item Semaphores  
+  • \item Shared memory 共享内存 
+  • \item Local domain UNIX sockets for fast IPC (not on Windows) ipc通信
+  • \item Cilk-style multiprocessing API  cilk api 支持
+  • \item Actor messaging API for process inter communications actor通信api 
+  \item Distributed Computing Support 分布式计算支持
+  • \item net-eval function for remote evaluation on multiple network nodes net-eval 多网络节点的远程调用 
+  • \item HTTP and net-eval server modes built-in (no code required) 内置http服务
+  • \item Most file operations can take URLs  通过urls来操作文件
+  \item 64-bit support支持64位系统
+  • \item 64-bit standard for integers and some file operations in the standard 32-bit versions 
+  • \item LP64 Memory model support makefiles for LINUX, MacOS X and many other UNIX 
+  • \item Since 10.5.0 the OSX installer is shipped as a 64-bit application by default 
+  \item Small and portable
+  • \item Only around 240KB in size on FreeBSD (size depends on compile flavor and platform) 
+  • \item Very fast load time for CGI and scripts 
+  • \item Uses only the very essential UNIX libs found on the smallest systems 
+  • \item Makefiles for macOS , BSDs, LINUX, Windows and many other UNIX 
+  \item Embeddable
+  • \item Shared library versions for all Platforms (.so, .dylib, .dll) 
+  \item International
+  • \item Unicode - UTF-8 support compile flavors 
+  \item Enterprise
+  • \item Well documented 
+  • \item Support via responsive community 
+  • \item Modules in isolated namespaces 
+  • \item Generation of source code API documentation using newLISPdoc utility (similar to javadoc) 
 \end{enumerate}
 
-\begin{note}
-由于新版本进行了重构，3.x 版本并不兼容 2.x 版本，并且在 3.06 版本更新过封面，如果你想把 3.06 版本（包括 2.x 版本）之前的文件转为最新版本兼容的文件，请仔细查看\href{https://github.com/ElegantLaTeX/ElegantBook/wiki/convert}{跨版本转换}。今后不再回答关于 2.x 版本的问题。
-\end{note}
 
 \section{基础}
 
@@ -156,6 +229,7 @@ table-drvien，在代码大全中有专门一章介绍，大意是如果条件�
 在newlisp中，提供了key/value的接口允许做到table-driven.
 
 \begin{lstlisting}[language=shell,numbers=none,nolol]
+  
 >(new Tree 'MyTable)
 MyTable
 >(define (ff) (println "ok"))
@@ -167,7 +241,6 @@ MyTable
 > ((MyTable "a"))
 ok
 "ok"
-
 \end{lstlisting}
 
  
@@ -215,7 +288,242 @@ ok
 (exit)
  \end{lstlisting}
 
-\subsection{FFI}
+ \subsection{FFI}
+ newlisp可以和其他程序库扩展使用，
+ newlisp的import函数, 可以用来导入各种库函数: DLLs (Win32的动态链接库), Linux/Unix 的共享库 (在 Mac OS X 中以 .so 或者 .dylib结尾)。
+ 
+
+简单的 FFI 扩展接口
+newlisp提供了一些扩展函数使用: import, callback , struct , pack 和 unpack . 这些扩展语法只支持使用libffi库构建的newLISP版本。
+
+有了扩展语法, 可以让我们方便地在newLISP中使用C语言中的数据类型，
+类似c中函数声明，指定好导入函数的参数类型和返回值就可以，
+编码的时候只要将newLISP数据直接传递给调用函数就可以了，剩下转换工作留给ffi。 我们还可以将newLISP函数注册为callback(回调函数)，提供给导入函数调用。
+扩展语法虽然也支持浮点数结构，不过不建议使用浮点数，因为不是所以的系统平台都支持。
+扩展API会根据不同的CPU架构，自动将转换后类型的数据做对齐操作。 具体的扩展语法请看用户手册。
+
+下面介绍的API大部分都可使用。
+
+首先 用C写共享库，编译库文件，newlisp调用库即可
+用C写共享库
+接下来演示如何在Win32 and Linux/Unix 上用C语言编写和编译共享库.
+
+\begin{lstlisting}
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+ 
+int foo1(char * ptr, int number)
+{
+  printf("the string: %s the number: %d\n", ptr, number);
+  return(10 * number);
+}
+ 
+char * foo2(char * ptr, int number)
+{
+  char * upper;
+  printf("the string: %s the number: %d\n", ptr, number);
+  upper = ptr;
+  while(*ptr) { *ptr = toupper(*ptr); ptr++; }
+  return(upper);
+}
+\end{lstlisting}
+
+在UNIX上编译共享库
+On Mac OS X and Linux/Unix 使用下面的方法编译 testlib.so :
+
+gcc testlib.c -shared -o testlib.so
+
+testlib.so 构建的时候做了 cdecl 转换(NIX默认)。
+testlib.dll构造的时候做了 stdcall 转换(Win32 默认)。
+
+构建完毕库文件后，在newlisp直接import函数
+\begin{lstlisting}
+> (import "/home/newlisp/testlib.so" "foo1")
+foo1 <6710118F>
+ 
+> (import "/home/newlisp/testlib.so" "foo2")
+foo2 <671011B9>
+ 
+> (foo1 "hello" 123)
+the string: hello the number: 123
+1230
+ 
+> (foo2 "hello" 123)
+the string: hello the number: 123
+4054088
+ 
+> (get-string (foo2 "hello" 123))
+the string: hello the number: 123
+"HELLO"
+>
+\end{lstlisting}
+注意: foo2 返回的 4054088 字符串的内存地址. 要用get-string才能读取字符串内容. 因为newLISP会根据系统自动判断库函数的调用类型, 在WIN32下,默认的函数调用类型是 stdcall,所以如果你在 WIN32 上调用的库是 cdecl 的, 就必须用 cdecl 关键字申明.
+
+'C' 结构和 'C' 字符串一样都可以通过指针操作访问,'C' 结构中的成员可以使用 get-string, get-int or get-char 访问. 下面来看样例:
+\begin{lstlisting}
+  typedef struct mystruc
+   {
+   int number;
+   char * ptr;
+   } MYSTRUC;
+ 
+MYSTRUC * foo3(char * ptr, int num )
+   {
+   MYSTRUC * astruc;
+   astruc = malloc(sizeof(MYSTRUC));
+   astruc->ptr = malloc(strlen(ptr) + 1);
+   strcpy(astruc->ptr, ptr);
+   astruc->number = num;
+   return(astruc);
+ }
+\end{lstlisting}
+
+可以使用下面的方法访问结构成员(不是唯一的方法):
+\begin{lstlisting}
+ > (set 'astruc (foo3 "hello world" 123))
+4054280
+ 
+> (get-string (get-integer (+ astruc 4)))
+"hello world"
+ 
+> (get-integer astruc)
+123
+\end{lstlisting}
+foo3 返回的是结构 astruc 的地址. (+ astruc 4)是字符串的地址, 在32位OS里 'C' 语言的一个整数4个字节的内存(MYSTRUC 的 int number). 字符串通过 get-string 访问.
+如上所示, 如果某些导入函数申请了内存却没有释放. 就必须用 libc 里的函数 free 来释放这些申请的数据,
+如果传递给导入函数的数据,是newLISP数据的引用, 就不需要手工释放内存了(因为newLISP会做)
+\begin{lstlisting}
+  (import "/usr/lib/libc.so" "free")
+
+(free astruc) ; astruc contains memory address of allocated structure
+\end{lstlisting}
+
+参数传递
+data Type	newLISP call	C function call
+integer	(foo 123)	foo(int number)
+double float	(foo 1.234)	foo(double number)
+float	(foo (flt 1.234))	foo(float number)
+string	(foo "Hello World!")	foo(char * string)
+integer array	(foo (pack "d d d" 123 456 789))	foo(int numbers[])
+float array	(foo (pack "f f f" 1.23 4.56 7.89))	foo(float[])
+double array	(foo (pack "lf lf lf) 1.23 4.56 7.89)	foo(double[])
+string array	(foo (pack "lu lu lu" "one" "two" "three")))	foo(char * string[])
+
+
+提取返回值
+data Type	newLISP to extract return value	C return
+integer	(set 'number (foo x y z))	return(int number)
+double float	n/a - only 32bit returns, use double float pointer instead	not available
+double float ptr	(set 'number (get-float (foo x y z)))	return(double * numPtr)
+float	not available	not available
+string	(set 'string (get-string (foo x y z)	return(char * string)
+integer array	(set 'numList (unpack "ld ld ld" (foo x y z)))	return(int numList[])
+float array	(set 'numList (unpack "f f f" (foo x y z)))	return(float numList[])
+double array	(set 'numList (unpack "lf lf lf") (foo x y z)))	return(double numList[])
+string array	(set 'stringList (map get-string (unpack "ld ld ld" (foo x y z))))	return(char * string[])
+
+
+Floats 和 doubles 只能通过地址操作(任何get- 函数操作的都是地址).
+如果返回的是数组,则必须知道数组长度才能提取. 例子假设的长度都是三.
+所有的 pack 和 unpack 格式化字符之间也可以没有空格,不过那样可读性会很差(比如(unpack "fldb" (foo x y z)) 是不是很蛋疼)
+"ld" 和 "lu" 可以互换(这里有疑惑,地址是可以但是数据...), 但是16位的 "u" 和 "d" 可能会产生不同的结果, 因为从 16 到 32 位是正数增长.
+
+pack 和 unpack 可以在大端和小端之间切换.
+
+
+编写封装库
+import 有时候无法导入库. 这是因为库没有遵循正规的 cdecl 调用,将所有的参数压入堆栈. 比如将 Mac OS X 运行在老式的 PPC CPUs 上, 默认安装的OpenGL库将无法使用.
+
+这时可以写一个专门的封装库将 cdecl 调用转换成目标库的调用方式.
+
+\begin{lstlisting}
+  /* wrapper.c - demo for wrapping library function
+ 
+compile:
+    gcc -m32 -shared wrapper.c -o wrapper.so
+or:
+    gcc -m32 -bundle wrapper.c -o wrapper.dylib
+ 
+usage from newLISP:
+ 
+    (import "./wrapper.dylib" "wrapperFoo")
+ 
+    (define (glFoo x y z)
+        (get-float (wrapperFoo 5 (float x) (int y) (float z))) )
+ 
+ (glFoo 1.2 3 1.4) => 7.8
+ 
+*/
+ 
+#include <stdio.h>
+#include <stdarg.h>
+ 
+ 
+/* the glFoo() function would normally live in the library to be
+   wrapped, e.g. libopengl.so or libopengl.dylib, and this
+   program would link to it.
+   For demo and test purpose the function has been included in this
+   file
+*/
+ 
+double glFoo(double x, int y, double z)
+    {
+    double result;
+ 
+    result = (x + z) * y;
+ 
+    return(result);
+    }
+ 
+/* this is the wrapper for glFoo which gets imported by newLISP
+   declaring it as a va-arg function guarantees 'cdecl'
+   calling conventions on most architectures
+*/
+ 
+double * wrapperFoo(int argc, ...)
+    {
+    va_list ap;
+    double x, z;
+    static double result;
+    int y;
+ 
+    va_start(ap, argc);
+ 
+    x = va_arg(ap, double);
+    y = va_arg(ap, int);
+    z = va_arg(ap, double);
+ 
+    va_end(ap);
+ 
+    result = glFoo(x, y, z);
+    return(&result);
+  }
+\end{lstlisting}
+
+为扩展库注册回调函数
+newLISP的内建函数 callback 可以获取用户定义函数的地址, 并将他注册成库函数的回调函数:
+\begin{lstlisting}
+  (define (keyboard key x y)
+  (if (= (& key 0xFF) 27) (exit)) ; exit program with ESC
+  (println "key:" (& key 0xFF) " x:" x  " y:" y))
+
+  (glutKeyboardFunc (callback 1 'keyboard))
+\end{lstlisting}
+
+
+利用共享库执行代码
+第一个例子我们用newLISP 调用自己的共享库函数 newlispEvalStr:
+\begin{lstlisting}
+(import "/usr/lib/newlisp.so" "newlispEvalStr")
+(get-string (newlispEvalStr "(+ 3 4)")) →  "7\n"
+\end{lstlisting}
+
+newlispEvalStr 的返回值总是一个字符串指针. 必须用 get-string 获得其中的内容. 所有的结果,就算是数字,都会以字符串(加换行符)的形式返回.如果不需要输出可以用 silent 函数屏蔽. 要得到数字,可以通过 int 或者 float 转换.
+
+要传递多行代码必须用 [cmd], [/cmd]:
+
+
 newLISP has two FFI APIs. The simple API needs no type specifiers but is limited to integers and pointers. The extended API can specify types for return values and parameters and can also be used for floats and structs.
 
 \begin{lstlisting}
@@ -228,10 +536,10 @@ newLISP has two FFI APIs. The simple API needs no type specifiers but is limited
 \end{lstlisting}
 
 \section{应用}
+
 \subsection{系统}
 监控Linux进程
-判断进程是否存活，如果不是，则重新启动, 监控进程的cpu和memory占用情况
-
+判断进程是否存活，如果不是，则重新启动, 监控进程的cpu和memory占用情况.
 
 在用newlisp创建多个进程模拟客户端进行测试的时候，关闭是个问题，下面的脚本很方便的杀掉所有newlisp进程
 
@@ -255,6 +563,28 @@ newlisp -l -c -d 4711 &
 -c 是
 -d 是链接之前保存状态，一个效果就是后续请求必须等待前面的请求完成才能发出
 
+\begin{lstlisting}
+  ; calculate primes in a range
+(define (primes from to)
+    (local (plist)
+    (for (i from to)
+        (if (= 1 (length (factor i)))
+        (push i plist -1)))
+plist))
+ 
+; start child processes
+(set 'start (time-of-day))
+ 
+(spawn 'p1 (primes 1 1000000))
+(spawn 'p2 (primes 1000001 2000000))
+(spawn 'p3 (primes 2000001 3000000))
+(spawn 'p4 (primes 3000001 4000000))
+ 
+; wait for a maximum of 60 seconds for all tasks to finish
+(sync 60000) ; returns true if all finished in time
+; p1, p2, p3 and p4 now each contain a lists of primes
+\end{lstlisting}
+例子中将1到4000000分成4个部分,传递给primes (搜索素数的)子进程,通过 spawn (会立即返回)并行启动,处理完的数据放到4个symbol里. 最后调用 sync 阻塞等待子进程60秒,直到子进程全部返回并存储到4个symbol里.
 
 用newlisp cilk API可以实现多进程通信。在实际应用中，父进程发送消息给多个子进程，使得父进程可以专注于自己的工作，把一些额外的工作交给子进程去完成，做到对父进程任务无阻塞的效果。
 
@@ -295,7 +625,8 @@ resp api
 @throw 抛出异常
 @note 笔记
 
-最后运行newlispdoc file.lsp 
+最后运行newlispdoc file.lsp
+\begin{lstlisting}
 ;; file.lsp
 
 ;; @module file
@@ -333,10 +664,12 @@ resp api
    (= ostype "Win32") (load (append file-folder "/file_win.lsp"))
    (throw-error (append "file tool doesn't support this OS for now, ostype:" ostype))
    ))
+ \end{lstlisting}
+ \subsection{模块化编程}
 
-   \subsection{模块化编程}
-   构造一个程序 当你的代码比较多或者各个代码文件之间充斥着大量重复代码的时候,
-   就必须把这些冗余的代码划分进一个个不同的代码模块(否则你很可能写出"九阴真经").
+ 构造一个程序 当你的代码比较多或者各个代码文件之间充斥着大量重复代码的时候,
+
+ 就必须把这些冗余的代码划分进一个个不同的代码模块(否则你很可能写出"九阴真经").
    newLISP中使用context来创建模块, 也就是命名空间. 命名空间将各个模块之间的词法隔离开.
    这样各模块可以拥有相同名字的变量而不冲突.
 
@@ -349,6 +682,7 @@ resp api
 当默认函数被作为某个函数的参数调用的时候, 默认函数会通过引用传递. 这意味这传递给函数的参数是原始数据, 而不是列表或者字符串的拷贝. 在传递庞大的数据的时候这个特性非常有用:
 
 \subsection{局部变量}
+
 循环函数中的局部变量，
 所有的循环函数 doargs, dolist, dostring, dotimes, dotree 和 for 都使用局部变量。 在循环结构内部,每一次循环,局部变量都能获得不同的值。
 但是在出了循环以后,循环内部的局部变量将消失。
@@ -358,21 +692,6 @@ let, define, 和 lambda 是另一种申明局部变量的方法：
 let 是一种常见的申明本地变量的方法.
 你可以通过免安装的方式使用本模板，也可以通过安装模板的方式使用。
 
-免安装使用方法如下，从 Github 或者 CTAN 下载最新（正式）版文件，严格意义上只需要类文件 \lstinline{elegantbook.cls}。然后将模板文件放在你的工作目录下即可使用。这样使用的好处是，无需安装，简便；缺点是，当模板进行更新之后，你需要手动替换 \lstinline{cls} 文件。
-
-如果你是 \TeX{} Live 2019 用户，我们非常推荐你直接进行安装和更新。你可以通过 \TeX{} Live 2019 自带的 \lstinline{tlshell}\footnote{也叫 \TeX{} Live Manager} 进行安装。安装非常简单，步骤如下，搜索并打开 \lstinline{tlshell}，然后通过 \lstinline{File -> Load Default Repository} 加载远程仓库，如果你不想使用默认的仓库，你可以通过 \lstinline{Options} 下的菜单设置远程仓库。设置好仓库之后，等待仓库加载完毕，你可以在下面的搜索栏搜索 \lstinline{elegantbook}，然后选择进行安装与更新。
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.7\textwidth]{tlshell.png}
-\caption{使用 \TeX{} Live Shell 安装 ElegantBook 模板}
-\end{figure}
-
-如果你是 \TeX{} Live 2018 的用户，由于 2018 无法直接更新到 2019，所以你想更新的话，需要卸载 2018 重装 2019。如果你实在不想折腾，那么你仍然可以使用本模板。你可以手动安装模板，将 \lstinline{elegantbook.cls} 复制到你的 \TeX{} Live 目录下，默认安装目录为 \lstinline|C:\texlive\2019\texmf-dist\tex\latex\elegantbook|，然后通过命令行（管理员权限），运行 \lstinline{texhash} 即可。
-
-啥？你是 C\TeX{} 用户？Sorry，本模板不提供支持。
-
-更多关于 \TeX{} Live 2019 的安装使用以及 C\TeX{} 与 \TeX{} Live 的兼容、系统路径问题，请参考官方文档以及啸行的\href{https://github.com/OsbertWang/install_latex/releases}{一份简短的安装 \LaTeX{} 的介绍}。
 
 \section{在线使用模板}
 考虑到用户的在线合作需求，我们把三套模板全部上传到 \href{https://www.overleaf.com/}{Overleaf} 上了，网络通畅的用户可以直接通过 Overleaf 在线使用我们的模板。这样的好处是无需安装 \TeX{} Live 2019，可以随时随地访问自己的文件。查找模板，请在 Overleaf 模板库里面搜索 \lstinline{elegantlatex} 即可，你也可以直接访问\href{https://www.overleaf.com/latex/templates?addsearch=elegantlatex}{搜索结果}。选择适当的模板之后，将其 \lstinline{Open as Template}，即可把模板存到自己账户下，然后可以自由编辑以及与别人一起协作。更多关于 Overleaf 的介绍和使用，请参考 Overleaf 的\href{https://www.overleaf.com/learn}{官方文档}。
@@ -435,7 +754,24 @@ Elegant\LaTeX{} 系列模板从创立至今已经有 8 年了，我们的模板�
 默认编码为 UTF-8，推荐使用 \TeX{} Live 编译
 。本文编写环境为 Win10 (64bit) + \TeX{} Live 2019，支持 \lstinline{PDFLaTeX} 以及 \lstinline{XeLaTeX} 编译。
 
+
 \section{语言模式}
+\subsection{列表的嵌套层}
+
+计算list的最大嵌套深度
+\begin{lstlisting}  
+(define (nesting lst prev (t 0))
+  (if (= lst prev)
+      t
+      (nesting (flat lst 1) lst (inc t))))
+
+;;(nesting '(a (((b c (d)))) (e) ((f)) g))
+\end{lstlisting}
+
+这里使用了 flat 和 inc 两个函数
+
+\subsection{最大乘积子表}
+
 本模板内含两套语言环境，改变语言环境会改变图表标题的引导词（图，表），
 文章结构词（比如目录，参考文献等），以
 及定理环境中的引导词（比如定理，引理等）。不同语言模式的启用如下：
@@ -991,6 +1327,515 @@ begin{custom}{问题}
 \sum_{i=1}^n x_i \equiv x_1 + x_2 +\cdots + x_n
 \end{equation}
 
+
+\chapter{newlisp 命令列表}
+
+
+\section{List processing, flow control, and integer arithmetic}
+
+\begin{itemize}
+  \item +, -, *, /, %     integer arithmetic
+  \item ++                increment integer numbers
+ \item --                decrement integer numbers
+ \item <, >, =           compares any data type: less, greater, equal
+  \item <=, >=, !=        compares any data type: less-equal, greater-equal, not-equal
+:                 constructs a context symbol and applies it to an object
+and               logical and
+append            appends lists ,arrays or strings to form a new list, array or string
+apply             applies a function or primitive to a list of arguments
+args              retrieves the argument list of a function or macro expression
+assoc             searches for keyword associations in a list
+begin             begins a block of functions
+bigint            convert a number to big integer format
+bind              binds variable associations in a list
+case              branches depending on contents of control variable
+catch             evaluates an expression, possibly catching errors
+chop              chops elements from the end of a list
+clean             cleans elements from a list
+collect           repeat evaluating an expression and collect results in a list
+cond              branches conditionally to expressions
+cons              prepends an element to a list, making a new list
+constant          defines a constant symbol
+count             counts elements of one list that occur in another list
+curry             transforms a function f(x, y) into a function fx(y)
+define            defines a new function or lambda expression
+define-macro      defines a macro or lambda-macro expression
+def-new           copies a symbol to a different context (namespace)
+difference        returns the difference between two lists
+doargs            iterates through the arguments of a function
+dolist            evaluates once for each element in a list
+dostring          evaluates once for each character in a string
+dotimes           evaluates once for each number in a range
+dotree            iterates through the symbols of a context
+do-until          repeats evaluation of an expression until the condition is met
+do-while          repeats evaluation of an expression while the condition is true
+dup               duplicates a list or string a specified number of times
+ends-with         checks the end of a string or list against a key of the same type
+eval              evaluates an expression
+exists            checks for the existence of a condition in a list
+expand            replaces a symbol in a nested list
+explode           explodes a list or string
+extend            extends a list or string
+first             gets the first element of a list or string
+filter            filters a list
+find              searches for an element in a list or string
+flat              returns the flattened list
+fn                defines a new function or lambda expression
+for               evaluates once for each number in a range
+for-all           checks if all elements in a list meet a condition
+if                evaluates an expression conditionally
+index             filters elements from a list and returns their indices
+intersect         returns the intersection of two lists
+lambda            defines a new function or lambda expression
+last              returns the last element of a list or string
+length            calculates the length of a list or string
+let               declares and initializes local variables
+letex             expands local variables into an expression, then evaluates
+letn              initializes local variables incrementally, like nested lets
+list              makes a list
+local             declares local variables
+lookup            looks up members in an association list
+map               maps a function over members of a list, collecting the results
+match             matches patterns against lists; for matching against strings, see find and regex
+member            finds a member of a list or string
+not               logical not
+nth               gets the nth element of a list or string
+or                logical or
+pop               deletes and returns an element from a list or string
+pop-assoc         removes an association from an association list
+push              inserts a new element into a list or string
+quote             quotes an expression
+ref               returns the position of an element inside a nested list
+ref-all           returns a list of index vectors of elements inside a nested list
+rest              returns all but the first element of a list or string
+replace           replaces elements inside a list or string
+reverse           reverses a list or string
+rotate            rotates a list or string
+select            selects and permutes elements from a list or string
+self              Accesses the target object inside a FOOP method
+set               sets the binding or contents of a symbol
+setf setq         sets contents of a symbol or list, array or string reference
+set-ref           searches for an element in a nested list and replaces it
+set-ref-all       searches for an element in a nested list and replaces all instances
+silent            works like begin but suppresses console output of the return value
+slice             extracts a sublist or substring
+sort              sorts the members of a list
+starts-with       checks the beginning of a string or list against a key of the same type
+swap              swaps two elements inside a list or string
+unify             unifies two expressions
+unique            returns a list without duplicates
+union             returns a unique list of elements found in two or more lists.
+unless            evaluates an expression conditionally
+until             repeats evaluation of an expression until the condition is met
+when              evaluates a block of statements conditionally
+while             repeats evaluation of an expression while the condition is true
+\end{itemize}
+String and conversion functions
+===============================
+address           gets the memory address of a number or string
+bigint            convert a number to big integer format
+bits              translates a number into binary representation
+char              translates between characters and ASCII codes
+chop              chops off characters from the end of a string
+dostring          evaluates once for each character in a string
+dup               duplicates a list or string a specified number of times
+ends-with         checks the end of a string or list against a key of the same type
+encrypt           does a one-time–pad encryption and decryption of a string
+eval-string       compiles, then evaluates a string
+explode           transforms a string into a list of characters
+extend            extends a list or string
+find              searches for an element in a list or string
+find-all          returns a list of all pattern matches found in string
+first             gets the first element in a list or string
+float             translates a string or integer into a floating point number
+format            formats numbers and strings as in the C language
+get-char          gets a character from a memory address
+get-float         gets a double float from a memory address
+get-int           gets a 32-bit integer from a memory address
+get-long          gets a long 64-bit integer from a memory address
+get-string        gets a string from a memory address
+int               translates a string or float into an integer
+join              joins a list of strings
+last              returns the last element of a list or string
+lower-case        converts a string to lowercase characters
+member            finds a list or string member
+name              returns the name of a symbol or its context as a string
+nth               gets the nth element in a list or string
+pack              packs newLISP expressions into a binary structure
+parse             breaks a string into tokens
+pop               pops from a string
+push              pushes onto a string
+regex             performs a Perl-compatible regular expression search
+regex-comp        pre-compiles a regular expression pattern
+replace           replaces elements in a list or string
+rest              gets all but the first element of a list or string
+reverse           reverses a list or string
+rotate            rotates a list or string
+select            selects and permutes elements from a list or string
+setf setq         sets contents of a string reference
+slice             extracts a substring or sublist
+source            returns the source required to bind a symbol as a string
+starts-with       checks the start of the string or list against a key string or list
+string            transforms anything into a string
+sym               translates a string into a symbol
+title-case        converts the first character of a string to uppercase
+trim              trims a string on one or both sides
+unicode           converts ASCII or UTF-8 to UCS-4 Unicode
+utf8              converts UCS-4 Unicode to UTF-8
+utf8len           returns length of an UTF-8 string in UTF-8 characters
+unpack            unpacks a binary structure into newLISP expressions
+upper-case        converts a string to uppercase characters
+
+Floating point math and special functions
+=========================================
+abs               returns the absolute value of a number
+acos              calculates the arc-cosine of a number
+acosh             calculates the inverse hyperbolic cosine of a number
+add               adds floating point or integer numbers and returns a floating point number
+array             creates an array
+array-list        returns a list conversion from an array
+asin              calculates the arcsine of a number
+asinh             calculates the inverse hyperbolic sine of a number
+atan              calculates the arctangent of a number
+atanh             calculates the inverse hyperbolic tangent of a number
+atan2             computes the principal value of the arctangent of Y / X in radians
+beta              calculates the beta function
+betai             calculates the incomplete beta function
+binomial          calculates the binomial function
+ceil              rounds up to the next integer
+cos               calculates the cosine of a number
+cosh              calculates the hyperbolic cosine of a number
+crc32             calculates a 32-bit CRC for a data buffer
+dec               decrements a number in a variable, list or array
+div               divides floating point or integer numbers
+erf               calculates the error function of a number
+exp               calculates the exponential e of a number
+factor            factors a number into primes
+fft               performs a fast Fourier transform (FFT)
+floor             rounds down to the next integer
+flt               converts a number to a 32-bit integer representing a float
+gammai            calculates the incomplete Gamma function
+gammaln           calculates the log Gamma function
+gcd               calculates the greatest common divisor of a group of integers
+ifft              performs an inverse fast Fourier transform (IFFT)
+inc               increments a number in a variable, list or array
+inf?              checks if a floating point value is infinite
+log               calculates the natural or other logarithm of a number
+min               finds the smallest value in a series of values
+max               finds the largest value in a series of values
+mod               calculates the modulo of two numbers
+mul               multiplies floating point or integer numbers
+NaN?              checks if a float is NaN (not a number)
+round             rounds a number
+pow               calculates x to the power of y
+sequence          generates a list sequence of numbers
+series            creates a geometric sequence of numbers
+sgn               calculates the signum function of a number
+sin               calculates the sine of a number
+sinh              calculates the hyperbolic sine of a number
+sqrt              calculates the square root of a number
+ssq               calculates the sum of squares of a vector
+sub               subtracts floating point or integer numbers
+tan               calculates the tangent of a number
+tanh              calculates the hyperbolic tangent of a number
+uuid              returns a UUID (Universal Unique IDentifier)
+
+Matrix functions
+================
+det               returns the determinant of a matrix
+invert            returns the inversion of a matrix
+mat               performs scalar operations on matrices
+multiply          multiplies two matrices
+transpose         returns the transposition of a matrix
+
+Array functions
+===============
+append            appends arrays
+array             creates and initializes an array with up to 16 dimensions
+array-list        converts an array into a list
+array?            checks if expression is an array
+det               returns the determinant of a matrix
+first             returns the first row of an array
+invert            returns the inversion of a matrix
+last              returns the last row of an array
+mat               performs scalar operations on matrices
+multiply          multiplies two matrices
+nth               returns an element of an array
+rest              returns all but the first row of an array
+setf              sets contents of an array reference
+slice             returns a slice of an array
+transpose         transposes a matrix
+
+Bit operators
+=============
+<<, >>            bit shift left, bit shift right
+&                 bitwise and
+|                 bitwise inclusive or
+^                 bitwise exclusive or
+~                 bitwise not
+
+Predicates
+==========
+atom?             checks if an expression is an atom
+array?            checks if an expression is an array
+bigint?           checks if a number is a big integer
+context?          checks if an expression is a context
+directory?        checks if a disk node is a directory
+empty?            checks if a list or string is empty
+even?             checks the parity of an integer number
+file?             checks if a file exists
+float?            checks if an expression is a float
+global?           checks if a symbol is global
+inf?              checks if a floating point value is infinite
+integer?          checks if an expression is an integer
+lambda?           checks if an expression is a lambda expression
+legal?            checks if a string contains a legal symbol
+list?             checks if an expression is a list
+macro?            checks if an expression is a lambda-macro expression
+NaN?              checks if a float is NaN (not a number)
+nil?              checks if an expression is nil
+null?             checks if an expression is nil, "", (), 0 or 0.0
+number?           checks if an expression is a float or an integer
+odd?              checks the parity of an integer number
+protected?        checks if a symbol is protected
+primitive?        checks if an expression is a primitive
+quote?            checks if an expression is quoted
+string?           checks if an expression is a string
+symbol?           checks if an expression is a symbol
+true?             checks if an expression is not nil
+zero?             checks if an expression is 0 or 0.0
+
+Date and time functions
+=======================
+date              converts a date-time value to a string
+date-list         returns a list of year, month, day, hours, minutes, seconds from a time value in seconds
+date-parse        parses a date string and returns the number of seconds passed since January 1, 1970, (formerly parse-date)
+date-value        calculates the time in seconds since January 1, 1970 for a date and time
+now               returns a list of current date-time information
+time              calculates the time it takes to evaluate an expression in milliseconds
+time-of-day       calculates the number of milliseconds elapsed since the day started
+
+Statistics, simulation and modeling functions
+=============================================
+amb               randomly selects an argument and evaluates it
+bayes-query       calculates Bayesian probabilities for a data set
+bayes-train       counts items in lists for Bayesian or frequency analysis
+corr              calculates the product-moment correlation coefficient
+crit-chi2         calculates the Chi² statistic for a given probability
+crit-f            calculates the F statistic for a given probability
+crit-t            calculates the Student's t statistic for a given probability
+crit-z            calculates the normal distributed Z for a given probability
+kmeans-query      calculates distances to cluster centroids or other data points
+kmeans-train      partitions a data set into clusters
+normal            makes a list of normal distributed floating point numbers
+prob-chi2         calculates the tail probability of a Chi² distribution value
+prob-f            calculates the tail probability of a F distribution value
+prob-t            calculates the tail probability of a Student's t distribution value
+prob-z            calculates the cumulated probability of a Z distribution value
+rand              generates random numbers in a range
+random            generates a list of evenly distributed floats
+randomize         shuffles all of the elements in a list
+seed              seeds the internal random number generator
+stats             calculates some basic statistics for a data vector
+t-test            compares means of data samples using the Student's t statistic
+
+Pattern matching
+================
+ends-with         tests if a list or string ends with a pattern
+find              searches for a pattern in a list or string
+find-all          finds all occurrences of a pattern in a string
+match             matches list patterns
+parse             breaks a string along around patterns
+ref               returns the position of an element inside a nested list
+ref-all           returns a list of index vectors of elements inside a nested list
+regex             finds patterns in a string
+replace           replaces patterns in a string
+search            searches for a pattern in a file
+starts-with       tests if a list or string starts with a pattern
+unify             performs a logical unification of patterns
+
+Financial math functions
+========================
+fv                returns the future value of an investment
+irr               calculates the internal rate of return
+nper              calculates the number of periods for an investment
+npv               calculates the net present value of an investment
+pv                calculates the present value of an investment
+pmt               calculates the payment for a loan
+
+Input/output and file operations
+================================
+append-file       appends data to a file
+close             closes a file
+current-line      retrieves contents of last read-line buffer
+device            sets or inquires about current print device
+exec              launches another program, then reads from or writes to it
+load              loads and evaluates a file of newLISP code
+open              opens a file for reading or writing
+peek              checks file descriptor for number of bytes ready for reading
+print             prints to the console or a device
+println           prints to the console or a device with a line-feed
+read              reads binary data from a file
+read-char         reads an 8-bit character from a file
+read-file         reads a whole file in one operation
+read-key          reads a keyboard key
+read-line         reads a line from the console or file
+read-utf8         reads UTF-8 character from a file
+save              saves a workspace, context, or symbol to a file
+search            searches a file for a string
+seek              sets or reads a file position
+write             writes binary data to a file
+write-char        writes a character to a file
+write-file        writes a file in one operation
+write-line        writes a line to the console or a file
+
+Processes and the Cilk API
+==========================
+!                 shells out to the operating system
+abort             aborts a child process started with spawn
+destroy           destroys a process created with fork or process
+exec              runs a process, then reads from or writes to it
+fork              launches a newLISP child process
+pipe              creates a pipe for interprocess communication
+process           launches a child process, remapping standard I/O and standard error
+receive           receive a message from another process
+semaphore         creates and controls semaphores
+send              send a message to another process
+share             shares memory with other processes
+spawn             launches a child process for Cilk process management
+sync              waits for child processes launched with spawn and collects results
+wait-pid          waits for a child process to end
+
+File and directory management
+=============================
+change-dir        changes to a different drive and directory
+copy-file         copies a file
+delete-file       deletes a file
+directory         returns a list of directory entries
+file-info         gets file size, date, time, and attributes
+make-dir          makes a new directory
+real-path         returns the full path of the relative file path
+remove-dir        removes an empty directory
+rename-file       renames a file or directory
+
+HTTP networking API
+===================
+base64-enc        encodes a string into BASE64 format
+base64-dec        decodes a string from BASE64 format
+delete-url        deletes a file or page from the web
+get-url           reads a file or page from the web
+json-error        returns error information from a failed JSON translation.
+json-parse        parses JSON formatted data
+post-url          posts info to a URL address
+put-url           uploads a page to a URL address
+xfer-event        registers an event handler for HTTP byte transfers
+xml-error         returns last XML parse error
+xml-parse         parses an XML document
+xml-type-tags     shows or modifies XML type tags
+
+Socket TCP/IP, UDP and ICMP network API
+=======================================
+net-accept        accepts a new incoming connection
+net-close         closes a socket connection
+net-connect       connects to a remote host
+net-error         returns the last error
+net-eval          evaluates expressions on multiple remote newLISP servers
+net-interface     Sets the default interface IP address on multihomed computers.
+net-ipv           Switches between IPv4 and IPv6 internet protocol versions.
+net-listen        listens for connections to a local socket
+net-local         returns the local IP and port number for a connection
+net-lookup        returns the name for an IP number
+net-packet        send a custom configured IP packet over raw sockets
+net-peek          returns the number of characters ready to be read from a network socket
+net-peer          returns the remote IP and port for a net connect
+net-ping          sends a ping packet (ICMP echo request) to one or more addresses
+net-receive       reads data on a socket connection
+net-receive-from  reads a UDP on an open connection
+net-receive-udp   reads a UDP and closes the connection
+net-select        checks a socket or list of sockets for status
+net-send          sends data on a socket connection
+net-send-to       sends a UDP on an open connection
+net-send-udp      sends a UDP and closes the connection
+net-service       translates a service name into a port number
+net-sessions      returns a list of currently open connections
+
+API for newLISP in a web browser
+================================
+display-html      display an HTML page in a web browser
+eval-string-js    evaluate JavaScript in the current web browser page
+
+Reflection and customization
+============================
+command-event     pre-processes the command-line and HTTP requests
+error-event       defines an error handler
+history           returns the call history of a function
+last-error        report the last error number and text
+macro             create a reader expansion macro
+ostype            contains a string describing the OS platform
+prefix            Returns the context prefix of a symbol
+prompt-event      customizes the interactive newLISP shell prompt
+read-expr         reads and translates s-expressions from source
+reader-event      preprocess expressions before evaluation event-driven
+set-locale        switches to a different locale
+source            returns the source required to bind a symbol to a string
+sys-error         reports OS system error numbers
+sys-info          gives information about system resources
+term              returns the term part of a symbol or its context as a string
+
+System functions
+================
+$                 accesses system variables $0 -> $15
+callback          registers a callback function for an imported library
+catch             evaluates an expression, catching errors and early returns
+context           creates or switches to a different namespace
+copy              copies the result of an evaluation
+debug             debugs a user-defined function
+delete            deletes symbols from the symbol table
+default           returns the contents of a default functor from a context
+env               gets or sets the operating system's environment
+exit              exits newLISP, setting the exit value
+global            makes a symbol accessible outside MAIN
+import            imports a function from a shared library
+main-args         gets command-line arguments
+new               creates a copy of a context
+pretty-print      changes the pretty-printing characteristics
+read-expr         translates a string to an s-expression without evaluating it
+reset             goes to the top level
+signal            sets a signal handler
+sleep             suspends processing for specified milliseconds
+sym               creates a symbol from a string
+symbols           returns a list of all symbols in the system
+throw             causes a previous catch to return
+throw-error       throws a user-defined error
+timer             starts a one-shot timer, firing an event
+trace             sets or inquires about trace mode
+trace-highlight   sets highlighting strings in trace mode
+
+Importing libraries
+===================
+address           returns the memory address of a number or string
+callback          registers a callback function for an imported library
+flt               converts a number to a 32-bit integer representing a float
+float             translates a string or integer into a floating point number
+get-char          gets a character from a memory address
+get-float         gets a double float from a memory address
+get-int           gets a 32-bit integer from a memory address
+get-long          gets a long 64-bit integer from a memory address
+get-string        gets a string from a memory address
+import            imports a function from a shared library
+int               translates a string or float into an integer
+pack              packs newLISP expressions into a binary structure
+struct            Defines a data structure with C types
+unpack            unpacks a binary structure into newLISP expressions
+
+newLISP internals API
+=====================
+command-event     pre-processes the command-line and HTTP requests
+cpymem            copies memory between addresses
+dump              shows memory address and contents of newLISP cells
+prompt-event      customizes the interactive newLISP shell prompt
+read-expr         reads and translates s-expressions from source
+reader-event      preprocess expressions before evaluation event-driven
 
 
 \chapter{最小示例}
