@@ -1840,6 +1840,57 @@ reader-event      preprocess expressions before evaluation event-driven
 
 \chapter{最小示例}
 
+(define-macro
+  (lambda* _args)
+  (letex ((fargs _args) 
+          (fbody (cons 'begin $args))
+          (fcall (cons 'this (flat _args))))
+    (lambda
+      fargs
+      (let ((this (lambda fargs fbody)))
+        fcall))))
+通过在扩展宏时，在lambda内部在定义一个lambda作为主体函数，
+使用let将局部变量this指向这个主体函数，于是就可以通过this来模拟调用自身了，函数不需要有名字，
+而只有一个指向函数的局部变量this，效果非常好：
+
+; 阶乘函数
+(lambda* (n)
+  (if (< n 2)
+    1
+    (* n (this (- n 1)))))
+
+; 宏展开后如下=>
+(lambda (n)
+  (let ((this
+        (lambda (n)
+          (begin
+            (if (< n 2)
+              1
+              (* n (this (- n 1))))))))
+    (this n)))
+
+     ((lambda* (n) (if (< n 2) 1 (* n (this (- n 1))))) 1)
+1
+> ((lambda* (n) (if (< n 2) 1 (* n (this (- n 1))))) 2)
+2
+> ((lambda* (n) (if (< n 2) 1 (* n (this (- n 1))))) 3)
+6
+> ((lambda* (n) (if (< n 2) 1 (* n (this (- n 1))))) 4)
+24
+> ((lambda* (n) (if (< n 2) 1 (* n (this (- n 1))))) 5)
+120
+> ((lambda* (n) (if (< n 2) 1 (* n (this (- n 1))))) 20)
+2432902008176640000
+> this
+nil
+> (setf this 100)
+100
+> ((lambda* (n) (if (< n 2) 1 (* n (this (- n 1))))) 10)
+3628800
+> this
+
+http://www.ishenping.com/ArtInfo/1011954.html
+
 \begin{lstlisting}
 \documentclass[lang=cn,11pt]{elegantbook}
 % title info
