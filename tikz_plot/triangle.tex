@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage[usenames,dvipsnames,pdftex]{xcolor}
+\usepackage{tikz,ifthen}
+\begin{document}
+\newcounter{density}
+\setcounter{density}{20}
+
+\begin{tikzpicture}
+\def\couleur{Orange}
+\def\couleura{Orange}
+\def\couleurb{Red}
+\def\couleurc{NavyBlue}
+    \path[coordinate] (0,0)  coordinate(A)
+                ++( 60:12cm) coordinate(B)
+                ++(-60:12cm) coordinate(C);
+    \draw[fill=\couleur!\thedensity] (A) -- (B) -- (C) -- cycle;
+    \draw[fill=\couleura!\thedensity] (A) -- (B);
+    \draw[fill=\couleurb!\thedensity] (B) -- (C);
+    \draw[fill=\couleurc!\thedensity] (A) -- (C);
+    \foreach \x in {1,...,15}{%
+        \pgfmathsetcounter{density}{\thedensity+10}
+        \setcounter{density}{\thedensity}
+        \path[coordinate] coordinate(X) at (A){};
+        \path[coordinate] (A) -- (B) coordinate[pos=.15](A)
+                            -- (C) coordinate[pos=.15](B)
+                            -- (X) coordinate[pos=.15](C);
+        \draw[fill=\couleura!\thedensity] (A)--(B) -- cycle;
+        \draw[fill=\couleur!\thedensity] (A)--(B);
+        \draw[fill=\couleurb!\thedensity] (B)--(C) -- cycle;
+        \draw[fill=\couleurc!\thedensity] (C)--(A) -- cycle;
+    }
+\end{tikzpicture}
+\end{document}
