@@ -1,0 +1,51 @@
+\documentclass[tikz]{standalone}
+\usepackage{smartdiagram}
+\usepackage{metalogo}
+\usepackage{dtklogos}
+\usepackage{xcolor}
+
+\begin{document}
+\begin{tikzpicture}[x=.5in, y=.5in]
+  % Colors
+  \definecolor{blank}{HTML}{ffffff}
+  \definecolor{outline}{HTML}{073642}
+  \definecolor{background}{HTML}{eee8d5}
+  \definecolor{lefts}{HTML}{dc322f}
+  \definecolor{middlem}{HTML}{b58900}
+  \definecolor{rightu}{HTML}{268bd2}
+
+	\newcommand{\myell}[1]{
+		}
+  \coordinate (A) at (0,0);
+  \coordinate (B) at (1,0);
+  \coordinate (C) at (2,0);
+  \coordinate (D) at (3,0);
+  \coordinate (E) at (4,0);
+  \coordinate (F) at (5,0);
+  \coordinate (G) at (6,0);
+  \coordinate (H) at (7,0);
+  \coordinate (I) at (8,0);
+  \coordinate (J) at (9,0);
+  \fill[red] (A) ellipse (3cm and 1cm);
+  
+  
+  %\draw (0,0) -- (4,0) -- (4,4) -- (0,4) -- (0,0);
+	\fill[red!30!white] circle (3cm);
+	\fill[green!30!white] circle (0.5cm);
+	\fill[blue!30!white] circle (1.5cm);
+	\draw[rotate=0] (120:3cm) ellipse(3cm and 1cm);
+	\draw[rotate=0] (80:3cm) ellipse(3cm and 1cm);
+	\draw[rotate=0] (40:3cm) ellipse(3cm and 1cm);
+	\draw (0:3cm) ellipse(3cm and 1cm);
+
+  %\draw (2,2) ellipse(3cm and 0.8cm);
+  %\draw (2,2) ellipse(3cm and 1cm);
+  %\draw (2,2) ellipse(3cm and 1.2cm);
+  %\draw (2,2) ellipse(3cm and 1.5cm);
+  %\draw (2,2) ellipse(3cm and 2cm);
+  
+    %\draw (3,1) (A);
+    
+  }
+\end{tikzpicture}
+\end{document}
