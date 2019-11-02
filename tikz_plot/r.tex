@@ -1,0 +1,32 @@
+\documentclass [12pt]{scrartcl}
+\usepackage{tikz}
+
+\begin{document}
+\begin{tikzpicture}[scale=2]
+\draw[->] (-1,0) -- (1,0);
+\draw[->] (0,-1) -- (0,1);
+\draw node [red] at (-1,.25) {\scriptsize{Kardioida $r=5-5\sin
+\theta$}};
+\draw[color=red,domain=0:6.28,samples=200,smooth] plot (canvas polar
+cs:angle=\x r,radius=      {5-5*sin(\x r)});    %r = angle en radian
+\end{tikzpicture}
+
+\begin{tikzpicture}[scale=2]
+\draw[->] (-1,0) -- (1,0);
+\draw[->] (0,-1) -- (0,1);
+\draw node [red] at (-1,.25) {\scriptsize{Kardioida $r=5-5\sin
+\theta$}};
+\draw[color=red,domain=0:6.28,samples=200,smooth] plot (canvas polar
+cs:angle=\x r,radius=      {.5cm-.5cm*sin(\x r)});    %r = angle en
+radian
+\end{tikzpicture}
+
+\begin{tikzpicture}[scale=2]
+\draw[->] (-1,0) -- (1,0);
+\draw[->] (0,-1) -- (0,1);
+\draw node [red] at (-1,.25) {\scriptsize{Kardioida $r=5-5\sin
+\theta$}};
+\draw[color=red,domain=0:6.28,samples=200,smooth] plot (xy polar
+cs:angle=\x r,radius=      {.5-.5*sin(\x r)});    %r = angle en radian
+\end{tikzpicture} 
+\end{document}

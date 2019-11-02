@@ -1,0 +1,30 @@
+
+
+\documentclass [12pt]{scrartcl}
+\usepackage{tikz}
+%%%<
+\usepackage{verbatim}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+%%%>
+\usetikzlibrary{shapes}
+\begin{document}
+\thispagestyle{empty}
+\begin{tikzpicture}
+
+
+  \pgfplothandlerlineto
+  
+  \pgfplotfunction{\x}{0, 2, ..., 180}{
+            \pgfpointxy     
+            {2.5 * 1 + cos(\x) * sin(2 / 1 * \x) - 2}
+            {-2.5 * 2 + sin(\x) * sin(2 / 1 * \x) + 2}
+        }
+
+        \pgfusepath{stroke}
+  
+  
+\end{tikzpicture}
+\end{document}
+
