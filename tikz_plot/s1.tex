@@ -1,0 +1,31 @@
+\documentclass[11pt]{scrartcl}
+\usepackage{tikz}
+
+\begin{document} 
+
+\def\spirographlike#1{%
+\def\repeatno{#1}
+ \foreach \i in {1,...,\repeatno}
+   {%
+    \begin{scope}[rotate=360/\repeatno*\i]
+       \mycloedcurve
+     \end{scope}}%
+    } 
+
+\def\mycloedcurve{\draw (1,0)--(-0.5,0.433)--(-0.5,-0.433)--cycle;} 
+\begin{tikzpicture}
+  \draw[red,->] (0,0)--(1,0) (0,0)--(0,1); \mycloedcurve 
+  \end{tikzpicture} 
+\begin{tikzpicture}[scale=4]
+\spirographlike{24}
+\end{tikzpicture}    
+
+\def\mycloedcurve{ \draw (1,0)--(2,0.433)--(0.5,0.866)--cycle;} 
+\begin{tikzpicture}
+  \draw[red,->] (0,0)--(1,0) (0,0)--(0,1); \mycloedcurve 
+  \end{tikzpicture}
+\begin{tikzpicture}[scale=2]
+\spirographlike{36}
+\end{tikzpicture}  
+
+\end{document} 
