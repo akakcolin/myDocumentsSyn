@@ -1,0 +1,64 @@
+\documentclass[tikz]{standalone}
+
+\begin{document}
+\begin{tikzpicture}[x=.5in, y=.5in]
+  % Colors
+  \definecolor{blank}{HTML}{ffffff}
+  \definecolor{outline}{HTML}{073642}
+  \definecolor{background}{HTML}{eee8d5}
+  \definecolor{lefts}{HTML}{dc322f}
+  \definecolor{middlem}{HTML}{b58900}
+  \definecolor{rightu}{HTML}{268bd2}
+
+  % Configurations
+  \tikzset{stroke/.style={line width=1.9ex, draw=#1}}
+  \tikzset{endstroke/.style={line width=0.9ex, draw=#1}}
+
+  % Drawing objects
+  \newcommand{\lefts}{%
+    -- +(1,2)
+    -- +(-1,2)
+    -- +(0,4)
+  }
+  \newcommand{\middlem}{%
+    -- +(1,2)
+    -- +(0,4)
+    -- +(-1,2)
+    -- +(0,4)
+    -- +(0.5,3)
+    -- +(-0.5,1)
+  }
+  \newcommand{\rightu}{%
+    -- +(-0.5,-1)
+    -- +(0.5,-3)
+    -- +(1.5,-1)
+    -- +(1,0)
+  }
+  \newcommand{\letterendpt}[2]{%
+    \draw [fill=background] #2 circle (0.14);
+    \draw [endstroke, #1] #2 circle (0.14);
+  }
+
+  % Bounding box
+  \clip [rounded corners=1ex, preaction={fill=blank}]
+  (0,0) rectangle (8,8);
+
+  % Bounding circle
+  \draw [fill=background] (4,4) circle (3.4);
+  \draw [stroke, outline] (4,4) circle (3.4);
+  % Right
+  \draw [stroke, rounded corners, rightu] (5,5) \rightu;
+  \letterendpt{rightu}{(5,5)}
+  \letterendpt{rightu}{(6,5)}
+  % Left
+  \draw [stroke, rounded corners, lefts] (2.5,2) \lefts;
+  \letterendpt{lefts}{(2.5,2)}
+  \letterendpt{lefts}{(2.5,6)}
+  % Middle
+  \draw [stroke, rounded corners, middlem] (4,2) \middlem;
+  \letterendpt{middlem}{(3,4)}
+  \letterendpt{middlem}{(3.5,3)}
+  \letterendpt{middlem}{(4,2)}
+\end{tikzpicture}
+\end{document}
+
