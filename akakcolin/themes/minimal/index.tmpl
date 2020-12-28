@@ -1,0 +1,27 @@
+{namespace coleslaw.theme.minimal}
+
+{template index}
+<article id="home">
+	<section>
+		<p>Hi, I am <b>Muhammad Attiyah</b>, I occasionally mess with computers.</p>
+		<p>You can find me elsewhere on the web at:</p>
+		<p class="social">Github: <a href="https://github.com/muattiyah">@muattiyah</a></p>
+		<p class="social">Twitter: <a href="https://twitter.com/muattiyah">@muattiyah</a></p>
+		<p class="social">E-mail: <tt>muattiyah</tt> [at] <tt>gmail</tt> [dot] <tt>com</tt></p>
+	</section>
+
+	<br />
+
+	<section class="postlist">
+		<h1>Posts</h1>
+		{foreach $obj in $index.content}
+		<table>
+			<tr>
+				<td class="postlist-date">{$obj.date}</td>
+				<td><a class="postlist-title" href="{$config.domain}/{$obj.url}">{$obj.title}</a></td>
+			</tr>
+		</table>
+		{/foreach}
+	</section>
+</article>
+{/template}

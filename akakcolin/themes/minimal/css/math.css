@@ -1,0 +1,8 @@
+.math.display {
+		display: table;
+		margin: 0 auto;
+}
+
+.proof-body > p > b {
+		font-size: 2.5rem;
+}

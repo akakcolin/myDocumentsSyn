@@ -1,0 +1,21 @@
+{namespace coleslaw.theme.minimal}
+
+{template post}
+
+<h1 class="post-title">{$post.title}</h1>
+<div class="info">
+		{if $post.date}
+      {$post.date}
+    {/if}
+</div>
+<div class="tags info">{\n}
+  {if $post.tags}
+  Tagged as {foreach $tag in $post.tags}
+  <a href="{$config.domain}/{$tag.url}">{$tag.name}</a>{nil}
+  {if not isLast($tag)},{sp}{/if}
+  {/foreach}
+  {/if}
+</div>{\n}
+{$post.text |noAutoescape}
+
+{/template}

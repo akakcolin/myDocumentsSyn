@@ -1,0 +1,139 @@
+;;;;;
+title: Python/C混合编程笔记
+tags: Python
+date: 2018-10-10 16:26:34
+format: md
+;;;;;
+
+#Python／C混合编程
+
+> Python简单使用，有着丰富的扩展包，但有一个缺点就是可能会慢，常用的加速方法就是与系统语言C／C++互联，即保证了Python的灵活性，也可以用来做一些计算密集型的工作。
+
+> 这一篇主要介绍C语言扩展Python的经验，后续再写一些使用pybind来实现C++/Python混合。
+
+
+
+Python为我们提供了混合编程的多种办法。有使用 cython, ctypes,cffi模块以及swig，原生接口。考虑到Python底层就是 C\C++，有原生的 C\C++ 接口，用来传递变量，那就从原生接口来写吧，相信掌握了底层接口的写法就很容易使用其他高级方法，比如swig，cython等。
+
+在混合之前我们需要知道一些Python与C的一些事：
+
+* 所有的Python元素，list, module、function、tuple、string等，都是PyObject,C语言里通过PyObject*来交互使用。
+
+* Python和C的语言类型可以相互转换：Python类型XXX转换为C语言类型YYY要使用PyXXX_AsYYY函数；C类型YYY转换为Python类型XXX要使用PyXXX_FromYYY函数。
+
+* C语言中创建Python类型的变量，可以使用PyXXX_New来创建，使用PyXXX_GetItem完成取得某一项的值。
+
+在写扩展模块中，所写的函数都是像下面这样的一个普通原型：
+
+```
+static PyObject *py_func(PyObject *self, PyObject *args) {
+ ... }
+ 
+```
+PyObject 是一个能表示任何Python对象的C数据类型。 扩展函数就是一个接受一个Python对象 （在 PyObject *args中）元组并返回一个新Python对象的C函数。 
+函数的 self 参数对于简单的扩展函数没有被使用到, 不过如果你想定义新的类或者是C中的对象类型的话就能派上用场了。比如如果扩展函数是一个类的一个方法， 那么 self 就能引用那个实例了。
+
+PyArg_ParseTuple() 函数被用来将Python中的值转换成C中对应表示。它接受一个指定输入格式的格式化字符串作为输入，比如“i”代表整数，“f”代表单精度浮点数，“d”代表双精度浮点数，“o”表示python对象，同样还有存放转换后结果的C变量的地址。 如果输入的值不匹配这个格式化字符串，就会抛出一个异常并返回一个NULL值。 通过检查并返回NULL，一个合适的异常会在调用代码中被抛出。
+
+Py_BuildValue() 函数被用来根据C数据类型创建Python对象。它同样接受一个格式化字符串来指定期望类型。 在扩展函数中，它被用来返回结果给Python。Py_BuildValue() 的一个特性是它能构建更加复杂的对象类型，比如元组和字典。 在 py_divide() 代码中，一个例子演示了怎样返回一个元组。不过，下面还有一些实例：
+
+```return Py_BuildValue("i", 34);      // Return an integer
+return Py_BuildValue("d", 3.4);     // Return a double
+return Py_BuildValue("s", "Hello"); // Null-terminated UTF-8 string
+return Py_BuildValue("(ii)", 3, 4); // Tuple (3, 4)
+```
+在扩展模块底部，你会发现一个函数表，比如本节中的 SampleMethods 表。 这个表可以列出C函数、Python中使用的名字、文档字符串。 所有模块都需要指定这个表，因为它在模块初始化时要被使用到。
+
+最后的函数 PyInit_sample() 是模块初始化函数，但该模块第一次被导入时执行。 这个函数的主要工作是在解释器中注册模块对象。
+
+
+编写一个c函数foo.c，将其放入到c文件foo_module.c
+
+```
+#include <Python.h>
+
+int foo_plus(int a) {
+    return a + 1;
+}
+
+static PyObject * _foo_plus_function(PyObject *self, PyObject *args)
+{
+    int number;
+    int out;
+
+    if (!PyArg_ParseTuple(args, "i", &number))
+        return NULL;
+    res = foo_plus(number);
+    return PyLong_FromLong(res);
+}
+
+static PyMethodDef FooPlusModuleMethods[] = {
+    {
+        "foo_plus", _foo_plus_function, METH_VARARGS,""
+    },
+    {NULL, NULL, 0, NULL}
+};
+
+PyMODINIT_FUNC initgreat_module(void) {
+    (void) Py_InitModule("foo_plus", FooPlusModuleMethods);
+}
+
+static PyMethodDef GreateModuleMethods[] = {
+    {
+         "great_function",
+         _great_function,
+         METH_VARARGS,
+         ""
+    },
+    {NULL, NULL, 0, NULL}
+};
+
+static struct PyModuleDef great_module = {
+  PyModuleDef_HEAD_INIT,
+"great_module",
+  NULL,
+  -1,
+  GreateModuleMethods
+};
+
+PyMODINIT_FUNC PyInit_great_module(void)
+{
+  PyObject *m;
+  m = PyModule_Create(&great_module);
+if (m == NULL)
+return NULL;
+  printf("init great_module module\n");
+return m;
+}
+
+
+```
+除了 功能函数great_function外，这个文件中还有以下部分：
+
+* 包裹函数_great_function。将Python的参数转化为C的参数（PyArg_ParseTuple），调用实际的great_function，并处理great_function的返回值，最终返回给Python环境。
+* 导出表GreateModuleMethods。它负责告诉Python这个模块里有哪些函数可以被Python调用。导出表的名字可以随便起，每一项有4个参数：第一个参数是提供给Python环境的函数名称，第二个参数是_great_function，即包裹函数。第三个参数的含义是参数变长，第四个参数是一个说明性的字符串。导出表总是以{NULL, NULL, 0, NULL}结束。
+* 导出函数initgreat_module。这个的名字不是任取的，是你的module名称添加前缀init。导出函数中将模块名称与导出表进行连接。
+
+
+第一步还是包含头文件
+第二步，使用python之前，要调用Py_Initialize();这个函数进行初始化。
+第三步，声明一些Python的变量，PyObject类型的。
+第四步，import module
+第五步，从你import进来的module中得到你要的函数
+pFunc   = PyObject_GetAttrString(pModule, "Hello");
+第六步，调用PyEval_CallObject来执行你的函数，第二个参数为我们要调用的函数的函数，本例子不含参数，所以设置为NULL。
+
+编译使用setuptools来编译更方便，新建setup.py
+
+```
+from setuptools import setup, Extension
+
+great_module = Extension('great_module', sources=["great_module.c"])
+setup(ext_modules=[great_module])
+```
+命令行执行编译python setup.py build
+编译成功后可以测试
+
+
+
+

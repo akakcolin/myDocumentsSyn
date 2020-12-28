@@ -1,0 +1,262 @@
+;;;;;
+title: c语言中的双链表(Doubly Linked Lists in C)
+tags: C，Algorithm
+date: 2020-12-28 16:56:42
+format: md
+;;;;;
+
+c语言中的双链表(Doubly Linked Lists in C)
+
+##
+今天翻译一篇关于[c语言中的双链表](https://locklessinc.com/articles/dlist/ "链接网址")。水平有限，多多包涵
+
+
+Doubly linked list是一种非常有用的数据结构。你可以添加和删除元素，并且可以不断地向前和向后扫描。这使得列表成为一个有用的 "容器"，它可以包含一组可能需要或不需要排序的东西。现在的问题是在c中创建双链表的最好方法是什么？
+
+一个明显方法是在添加两个指针。类似下面这样的方法。
+
+```
+struct foo {
+	struct foo *next;
+	struct foo *prev;
+	
+	int data;
+	int some_more_data;
+};
+```
+这样做可以起到相当好的效果。它足够灵活地满足需求。(你甚至可以有一对以上的指针，允许数据同时存在于多个链表中)。但问题是，**这样编码容易出错，foo上的每一个链表操作都必须重新实现，这就有可能带入bug。**
+
+另一种构造双链的方法是使用一个void \*指针来指向数据，使得容器具有通用性。其实现可能是这样的：
+
+```
+struct list {
+	struct list *next;
+	struct list *prev;
+	void *data;
+};
+```
+上述方法消除了代码重复问题。但是，与原来的方法相比，它存在着一些限制：第一个问题是，对象每次只能属于一个链表。(根据程序的组织方式不同，这可能是个问题，也可能不是问题)；第二个问题是效率低下。为了将一个对象添加到链表中，我们现在需要进行内存分配。额外的开销可能比较大的。最后，使用 void* 指针并不安全。错误的对象可能会不小心被添加到链表中，而编译器无任何警告。
+
+幸运的是，其他人也遇到过这个问题，而且有一些既安全、快速，又有通用的解决方案。不过在这之前，我们需要先研究一些宏的使用来探索它们是如何工作的。第一个这样的实现来自于*BSD系统，存在于queue.h头中。在这个头里有多个方法，但最通用的是TAILQ的宏集。这些方法定义了一个宏来构造一个通用的链表。
+
+给定一个新结构的名称和类型，它为链表的头部构造一个结构的定义。链表里也有一个类似的宏定义。
+
+```
+#define	TAILQ_ENTRY(type, qual)\
+struct {\
+	qual type *tqe_next;		/* next element */\
+	qual type *qual *tqe_prev;	/* address of previous next element */\
+}
+```
+要使用上述方法，需要在结构中调用宏，在数据的结构定义中调用宏。
+
+```
+struct foo {
+	TAILQ_ENTRY(struct foo, ) my_list;
+	int data;
+	int more_data;
+};
+```
+
+头部包含允许在链表中插入删除迭代的其他宏。例如，删除一个元素的代码看起来像这样。
+
+```
+#define	TAILQ_REMOVE(head, elm, field) \
+do {\
+	if (((elm)->field.tqe_next) != NULL)\
+		(elm)->field.tqe_next->field.tqe_prev =\
+			(elm)->field.tqe_prev;\
+	else\
+		(head)->tqh_last = (elm)->field.tqe_prev;\
+	*(elm)->field.tqe_prev = (elm)->field.tqe_next;\
+} while (0)
+```
+上面是用do-while(0)循环包装的，就像一条语句一样。这样做是为了避免if语句的dangling-else问题。剩下的代码就很简单：检查元素是否是最后一个，如果是，它就更新列表头结构，而不是前一个元素。其余的就是简单的指针操作，将不需要的元素去掉。由于每个列表都使用相同的内嵌结构，所以访问tqe_next和tqe_prev的操作都是一样的。你只需要记得传入正确的 "字段 "来对应所需的列表就可以了。在上面的 struct foo 类型的 list 的情况下，我们需要使用 'my_list'。
+
+上面的方法是可行的，但效率略低。注意，需要通过 if 语句来分别处理列表的末端? 如果列表是循环的，那么所有的插入和删除操作都被简化了。在\*BSD的头文件中，有一组相应的CIRCLEQ宏来完成这个操作。然而，Linux内核的开发者们通过他们的struct list_head的实现将这一想法更进一步。
+
+如果你在 Linux 内核的源代码中查看一下，在 include/linux/list.h 中有一个实现通用的双链接列表的头，它比 BSD 的实现要 "干净 "一些，因为只有一个结构。
+
+```
+struct list_head {
+	struct list_head *next, *prev;
+};
+```
+如果你想把这种类型的字段包含在列表中，你只需要在你的数据中包含这种类型的字段。
+
+```
+
+struct foo {
+	int data;
+	struct list_head my_list;
+	int some_more_data;
+};
+```
+
+这里的问题是，如何才能实现呢？list_head结构相互指向.但是如何才能从一个指向list_head的指针（可以是数据中的任意偏移位置）转移到一个指向数据本身的指针呢？Linux内核通过container_of()宏来实现，而这个宏又使用了C标准中很少使用的offsetof()功能。Offsetof()，当给定一个类型，以及该类型的成员时，将返回该成员从类型的起始点开始的字节偏移量。有了这些信息，你就可以进行少量的指针运算，从指向包含成员的指针转移到包含对象的指针。
+
+container_of 的实现是：
+
+```
+#define container_of(ptr, type, member) ({\
+	const typeof( ((type *)0)->member ) *__mptr = (ptr);\
+	(type *)( (char *)__mptr - offsetof(type,member) );})
+```
+
+第一行只是为了检查类型。我们要确保传入的指针确实是一个类型为&(type.member)的指针。第二行只是将指针转换为(char \*)，这样我们就可以使用字节大小的偏移量。最后的 cast 返回给我们正确的类型。
+
+然后，列表代码使用了一个简单的包装器 "list_entry"，从指针到条目，再到元素的指针。
+
+```
+#define list_entry(ptr, type, member) \
+	container_of(ptr, type, member)
+```
+
+最后，可以构造一个迭代器宏，使用 list_entry 来一次次获取元素。一个例子是 list_for_each_entry()，它允许用户对整个列表进行迭代。
+
+```
+#define list_for_each_entry(pos, head, member)\
+	for (pos = list_entry((head)->next, typeof(*pos), member);\
+		&pos->member != (head);\
+		pos = list_entry(pos->member.next, typeof(*pos), member))
+```
+
+就像TAILQ宏一样，我们需要给列表成员（字段），这样正确的列表才会被迭代。
+
+上述技术相当有趣...........但或许可以改进。第一个问题是，很多宏需要给出数据结构成员或字段，如果不给出，直接处理 "混乱的 "list_head的替代。另一个问题是，这些列表的类型安全度并不高。几乎没有什么能防止错误的 list_head 的类型被使用。你可以把不同类型的东西放在同一个列表中，然后意外地迭代它们。如果list_head字段的偏移量不同，那么就会导致数据损坏。
+
+幸运的是，这些问题是可以克服的，代价是让列表头更像*BSD的TAILQ技术。我们希望在列表头结构中存储列表元素的类型，以及字段偏移值的数值。这听起来是不可能的，但是通过gcc扩展，我们实际上可以做到这一点。这个神奇的定义看起来是这样的。
+
+```
+struct dlist {
+	struct dlist *next;
+	struct dlist *prev;
+};
+
+#define DECLARE_DLIST(head_type, type, field)\
+union head_type {\
+    struct dlist list;\
+    union {\
+        char (*offset)[offsetof(type, field)];\
+        type *t;\
+    } *data;\
+}
+```
+
+我们使用了一个类似于 struct list_head 的通用定义，但这次称为 struct dlist。但是，我们还要求用户声明head是一个独立的类型。这个新的类型有点奇怪，它是结构dlist和一些额外的数据指针的结合。这个 "data "指针永远不会被读取或存储到...........它只是我们在类型中偷偷地存储一些信息。我们存储的是列表的字段的偏移量，以及列表元素的类型。这两部分信息可以通过宏来提取。
+
+```
+#define DLIST_OFFSET(head) sizeof(*(head)->data->offset)
+#define DLIST_TYPE(head) typeof((head)->data->t)
+```
+
+注意，sizeof()本征和gcc扩展的typeof()本征都没有实际评估它们的参数。它们只是使用类型信息，所以数据指针并没有实际遵循。你可以用这个方法来 "存储 "任意类型和无符号长整数。只要原始类型的大小与指针相同或大于指针，就不会有运行时的开销成本。我们特意把数据指针做成一个未命名的联合体，以防止别名问题。这是因为我们不想让潜在的编译器优化受到这个技巧的影响。
+
+上面的意思是，只要我们有办法访问列表头的类型，我们就可以在列表元素的指针和条目之间进行转换，而不需要传递 "字段"。由于许多列表操作无论如何都需要列表头，这对于简化列表数据结构的用户界面是一个巨大的胜利。做到这一点的宏有以下几种。
+
+
+```
+#define DLIST_ELEM(head, list) \
+    ((DLIST_TYPE(head)) ((char *)(list) - DLIST_OFFSET(head)))
+
+#define DLIST_FIELD(head, elem) \
+    ((struct dlist *) ((char *)(elem) + DLIST_OFFSET(head)))
+```
+
+(在这种情况下，我们没有像Linux内核那样做额外的类型检查，但它可以很容易地加入。这样做的一个方法可能是：
+
+```
+#define BUILD_BUG_IF_ZERO(P)\
+    sizeof(char[-(int) !(P)])
+
+#define DLIST_CHECK_TYPES(head, elem)\
+    BUILD_BUG_IF_ZERO(__builtin_types_compatible_p(DLIST_TYPE(head),\
+         typeof(elem)))
+```
+
+这样可以检查elem是否真的是存储在head所指向的列表中的东西的类型。
+我们可以为我们的通用列表创建 "不安全 "迭代器。
+
+
+```
+#define DLIST_NEXT_(elem, field) \
+        container_of((elem)->field.next, typeof(*(elem)), field)
+
+#define DLIST_PREV_(elem, field) \
+        container_of((elem)->field.prev, typeof(*(elem)), field)
+
+#define DLIST_FIRST_(head) DLIST_ELEM((head), (head)->list.next)
+#define DLIST_LAST_(head) DLIST_ELEM((head), (head)->list.prev)
+```
+
+这些都不太正确，因为如果我们从列表的末尾迭代，它们可能会尝试将列表头结构解释为元素。为了避免这种情况，我们需要知道列表是否为空。
+
+```
+#define DLIST_EMPTY(head) ((head)->list.next == &(head)->list)
+```
+
+或者说，如果我们不是第一个元素就是最后一个元素，而且迭代的方式不对。
+
+
+```
+#define DLIST_FIRST(head)\
+    (DLIST_EMPTY(head) ? NULL : DLIST_FIRST_(head))
+#define DLIST_LAST(head)\
+    (DLIST_EMPTY(head) ? NULL : DLIST_LAST_(head))
+	
+#define DLIST_SAFE(head, list)\
+    ((list) == &(head)->list) ? NULL : DLIST_ELEM((head), (list))
+	
+#define DLIST_NEXT(head, elem) \
+    (DLIST_CHECK_TYPES(head, elem),\
+        DLIST_SAFE((head), DLIST_FIELD((head), (elem))->next))
+#define DLIST_PREV(head, elem) \
+    (DLIST_CHECK_TYPES(head, elem),\
+        DLIST_SAFE((head), DLIST_FIELD((head), (elem))->prev))
+```
+
+其他插入和删除元素的代码与 list_head 方法非常相似。不过，我们可以使用之前介绍的一些基础架构来改进列表迭代器。基本上，我们可以不用再传递字段，而是根据列表头的类型来计算。这样做的正向迭代和反向迭代的代码看起来像这样。
+
+```
+#define DLIST_LOOP_NEXT(var, head)\
+	DLIST_ELEM((head), DLIST_FIELD((head), (var))->next)
+#define DLIST_LOOP_PREV(var, head)\
+	DLIST_ELEM((head), DLIST_FIELD((head), (var))->prev)
+
+#define DLIST_FOREACH(var, head)\
+	for ((var) = DLIST_ELEM((head), (head)->list.next);\
+    	DLIST_FIELD((head), (var)) != &(head)->list;\
+		(var) = DLIST_LOOP_NEXT((var), (head)))
+
+#define DLIST_FOREACH_REVERSE(var, head)\
+	for ((var) = DLIST_ELEM((head), (head)->list.prev);\
+    	DLIST_FIELD((head), (var)) != &(head)->list;\
+		(var) = DLIST_LOOP_PREV((var), (head)))
+```
+
+最后，可以对 "安全 "迭代器进行改进，如果当前元素被删除了，这个迭代器仍然有效。原始的 list_head 版本需要用户传递一个临时变量来存储下一次迭代。但是，我们可以自己构造一个变量来使用。一个方法是利用C99中的for循环允许在for-循环的括号中声明变量。不幸的是，一个简单的循环并不能达到我们想要的效果，但可以通过几个if语句和一个geto来解决这个问题。
+
+```
+#ifndef CONCAT
+#define CONCAT1(x,y)  x ## y
+#define CONCAT(x,y)   CONCAT1(x,y)
+#endif
+
+#define DLIST_FOREACH_SAFE(var, head)\
+if (1) {\
+    goto CONCAT(dlist_entry_, __LINE__);\
+} else for (typeof(var) CONCAT(t_, __LINE__);;)\
+    if (1) {\
+        break;\
+    } else\
+    CONCAT(dlist_entry_, __LINE__):\
+    for ((var) = DLIST_ELEM((head), (head)->list.next),\
+		CONCAT(t_, __LINE__) = DLIST_LOOP_NEXT((var), (head));\
+		DLIST_FIELD((head), (var)) != &(head)->list;\
+		(var) = CONCAT(t_, __LINE__),\
+		CONCAT(t_, __LINE__) = DLIST_LOOP_NEXT((var), (head)))
+```
+
+由此产生的宏，虽然编写起来要复杂得多，但使用起来要简单得多。其结果是非常安全的类型，而且所产生的对象代码与 list_head 方法完全相同。在容器类型中存储信息的技巧也可以用于其他数据结构。相当多的C++模板的威力其实也可以用这种方式在C中使用。
+
+
