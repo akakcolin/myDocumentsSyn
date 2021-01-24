@@ -15,7 +15,7 @@ Doubly linked list是一种非常有用的数据结构。你可以添加和删�
 
 一个明显方法是在添加两个指针。类似下面这样的方法。
 
-```
+```c
 struct foo {
 	struct foo *next;
 	struct foo *prev;
@@ -28,7 +28,7 @@ struct foo {
 
 另一种构造双链的方法是使用一个void \*指针来指向数据，使得容器具有通用性。其实现可能是这样的：
 
-```
+```c
 struct list {
 	struct list *next;
 	struct list *prev;
@@ -41,7 +41,7 @@ struct list {
 
 给定一个新结构的名称和类型，它为链表的头部构造一个结构的定义。链表里也有一个类似的宏定义。
 
-```
+```c
 #define	TAILQ_ENTRY(type, qual)\
 struct {\
 	qual type *tqe_next;		/* next element */\
@@ -50,7 +50,7 @@ struct {\
 ```
 要使用上述方法，需要在结构中调用宏，在数据的结构定义中调用宏。
 
-```
+```c
 struct foo {
 	TAILQ_ENTRY(struct foo, ) my_list;
 	int data;
@@ -60,7 +60,7 @@ struct foo {
 
 头部包含允许在链表中插入删除迭代的其他宏。例如，删除一个元素的代码看起来像这样。
 
-```
+```c
 #define	TAILQ_REMOVE(head, elm, field) \
 do {\
 	if (((elm)->field.tqe_next) != NULL)\
@@ -77,15 +77,14 @@ do {\
 
 如果你在 Linux 内核的源代码中查看一下，在 include/linux/list.h 中有一个实现通用的双链接列表的头，它比 BSD 的实现要 "干净 "一些，因为只有一个结构。
 
-```
+```c
 struct list_head {
 	struct list_head *next, *prev;
 };
 ```
 如果你想把这种类型的字段包含在列表中，你只需要在你的数据中包含这种类型的字段。
 
-```
-
+```c
 struct foo {
 	int data;
 	struct list_head my_list;
@@ -97,7 +96,7 @@ struct foo {
 
 container_of 的实现是：
 
-```
+```c
 #define container_of(ptr, type, member) ({\
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
@@ -107,14 +106,14 @@ container_of 的实现是：
 
 然后，列表代码使用了一个简单的包装器 "list_entry"，从指针到条目，再到元素的指针。
 
-```
+```c
 #define list_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 ```
 
 最后，可以构造一个迭代器宏，使用 list_entry 来一次次获取元素。一个例子是 list_for_each_entry()，它允许用户对整个列表进行迭代。
 
-```
+```c
 #define list_for_each_entry(pos, head, member)\
 	for (pos = list_entry((head)->next, typeof(*pos), member);\
 		&pos->member != (head);\
@@ -127,7 +126,7 @@ container_of 的实现是：
 
 幸运的是，这些问题是可以克服的，代价是让列表头更像*BSD的TAILQ技术。我们希望在列表头结构中存储列表元素的类型，以及字段偏移值的数值。这听起来是不可能的，但是通过gcc扩展，我们实际上可以做到这一点。这个神奇的定义看起来是这样的。
 
-```
+```c
 struct dlist {
 	struct dlist *next;
 	struct dlist *prev;
@@ -145,7 +144,7 @@ union head_type {\
 
 我们使用了一个类似于 struct list_head 的通用定义，但这次称为 struct dlist。但是，我们还要求用户声明head是一个独立的类型。这个新的类型有点奇怪，它是结构dlist和一些额外的数据指针的结合。这个 "data "指针永远不会被读取或存储到...........它只是我们在类型中偷偷地存储一些信息。我们存储的是列表的字段的偏移量，以及列表元素的类型。这两部分信息可以通过宏来提取。
 
-```
+```c
 #define DLIST_OFFSET(head) sizeof(*(head)->data->offset)
 #define DLIST_TYPE(head) typeof((head)->data->t)
 ```
@@ -155,7 +154,7 @@ union head_type {\
 上面的意思是，只要我们有办法访问列表头的类型，我们就可以在列表元素的指针和条目之间进行转换，而不需要传递 "字段"。由于许多列表操作无论如何都需要列表头，这对于简化列表数据结构的用户界面是一个巨大的胜利。做到这一点的宏有以下几种。
 
 
-```
+```c
 #define DLIST_ELEM(head, list) \
     ((DLIST_TYPE(head)) ((char *)(list) - DLIST_OFFSET(head)))
 
@@ -165,7 +164,7 @@ union head_type {\
 
 (在这种情况下，我们没有像Linux内核那样做额外的类型检查，但它可以很容易地加入。这样做的一个方法可能是：
 
-```
+```c
 #define BUILD_BUG_IF_ZERO(P)\
     sizeof(char[-(int) !(P)])
 
@@ -178,7 +177,7 @@ union head_type {\
 我们可以为我们的通用列表创建 "不安全 "迭代器。
 
 
-```
+```c
 #define DLIST_NEXT_(elem, field) \
         container_of((elem)->field.next, typeof(*(elem)), field)
 
@@ -191,14 +190,14 @@ union head_type {\
 
 这些都不太正确，因为如果我们从列表的末尾迭代，它们可能会尝试将列表头结构解释为元素。为了避免这种情况，我们需要知道列表是否为空。
 
-```
+```c
 #define DLIST_EMPTY(head) ((head)->list.next == &(head)->list)
 ```
 
 或者说，如果我们不是第一个元素就是最后一个元素，而且迭代的方式不对。
 
 
-```
+```c
 #define DLIST_FIRST(head)\
     (DLIST_EMPTY(head) ? NULL : DLIST_FIRST_(head))
 #define DLIST_LAST(head)\
@@ -217,7 +216,7 @@ union head_type {\
 
 其他插入和删除元素的代码与 list_head 方法非常相似。不过，我们可以使用之前介绍的一些基础架构来改进列表迭代器。基本上，我们可以不用再传递字段，而是根据列表头的类型来计算。这样做的正向迭代和反向迭代的代码看起来像这样。
 
-```
+```c
 #define DLIST_LOOP_NEXT(var, head)\
 	DLIST_ELEM((head), DLIST_FIELD((head), (var))->next)
 #define DLIST_LOOP_PREV(var, head)\
@@ -236,7 +235,7 @@ union head_type {\
 
 最后，可以对 "安全 "迭代器进行改进，如果当前元素被删除了，这个迭代器仍然有效。原始的 list_head 版本需要用户传递一个临时变量来存储下一次迭代。但是，我们可以自己构造一个变量来使用。一个方法是利用C99中的for循环允许在for-循环的括号中声明变量。不幸的是，一个简单的循环并不能达到我们想要的效果，但可以通过几个if语句和一个geto来解决这个问题。
 
-```
+```c
 #ifndef CONCAT
 #define CONCAT1(x,y)  x ## y
 #define CONCAT(x,y)   CONCAT1(x,y)
@@ -258,5 +257,3 @@ if (1) {\
 ```
 
 由此产生的宏，虽然编写起来要复杂得多，但使用起来要简单得多。其结果是非常安全的类型，而且所产生的对象代码与 list_head 方法完全相同。在容器类型中存储信息的技巧也可以用于其他数据结构。相当多的C++模板的威力其实也可以用这种方式在C中使用。
-
-

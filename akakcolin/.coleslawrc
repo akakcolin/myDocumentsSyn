@@ -15,12 +15,11 @@
  ;; Optional information
  :excerpt-sep "<!--more-->"           ;; to set the separator for excerpt in content 
  :feeds ("lisp")
- :plugins ((analytics :tracking-code "foo")
-           (disqus :shortname "my-site-name")
-           ; (incremental)  ;; *Remove comment to enable incremental builds.
+ :plugins (
            (mathjax)
            (sitemap)
            (static-pages)
+           ;(colorize)
            ;; deployment plugins
            ;; deployment to github pages
            ; (gh-pages :url "git@github.com:myaccount/myrepo.git"
@@ -31,8 +30,9 @@
            ;; default deploy method is rsync
            (rsync "-avz" "--delete" "--exclude" ".git/" "--exclude" ".gitignore" "--copy-links")
           )
- :sitenav ((:url "http://akakcolin.com/" :name "Home")
-           (:url "http://github.com/akakcolin" :name "Code"))
+ :sitenav ((:url "http://akakcolin.com" :name "Blog")
+           ;(:url "/about.html" :name "About")
+	   )
  :staging-dir "/tmp/coleslaw/"  ;; for Coleslaw to do intermediate work, default: "/tmp/coleslaw"
 )
 

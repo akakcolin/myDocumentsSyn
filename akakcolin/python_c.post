@@ -25,7 +25,7 @@ Python为我们提供了混合编程的多种办法。有使用 cython, ctypes,c
 
 在写扩展模块中，所写的函数都是像下面这样的一个普通原型：
 
-```
+```c
 static PyObject *py_func(PyObject *self, PyObject *args) {
  ... }
  
@@ -37,7 +37,8 @@ PyArg_ParseTuple() 函数被用来将Python中的值转换成C中对应表示。
 
 Py_BuildValue() 函数被用来根据C数据类型创建Python对象。它同样接受一个格式化字符串来指定期望类型。 在扩展函数中，它被用来返回结果给Python。Py_BuildValue() 的一个特性是它能构建更加复杂的对象类型，比如元组和字典。 在 py_divide() 代码中，一个例子演示了怎样返回一个元组。不过，下面还有一些实例：
 
-```return Py_BuildValue("i", 34);      // Return an integer
+```c
+return Py_BuildValue("i", 34);      // Return an integer
 return Py_BuildValue("d", 3.4);     // Return a double
 return Py_BuildValue("s", "Hello"); // Null-terminated UTF-8 string
 return Py_BuildValue("(ii)", 3, 4); // Tuple (3, 4)
@@ -49,7 +50,7 @@ return Py_BuildValue("(ii)", 3, 4); // Tuple (3, 4)
 
 编写一个c函数foo.c，将其放入到c文件foo_module.c
 
-```
+```c
 #include <Python.h>
 
 int foo_plus(int a) {
@@ -125,9 +126,8 @@ pFunc   = PyObject_GetAttrString(pModule, "Hello");
 
 编译使用setuptools来编译更方便，新建setup.py
 
-```
+```python
 from setuptools import setup, Extension
-
 great_module = Extension('great_module', sources=["great_module.c"])
 setup(ext_modules=[great_module])
 ```
