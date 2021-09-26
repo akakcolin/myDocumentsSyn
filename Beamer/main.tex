@@ -1,0 +1,156 @@
+
+\documentclass[xcolor=x11names,UTF8]{ctexbeamer}
+
+\graphicspath{{figures/}} % 图片路径
+\usepackage{ragged2e}
+\renewcommand{\raggedright}{\leftskip=0pt \rightskip=0pt plus 0cm} % 对齐
+% \usepackage{calligra} % Thank you
+
+\usepackage{natbib} % 参考文献
+
+\mode<presentation> {
+
+% The Beamer class comes with a number of default slide themes
+% which change the colors and layouts of slides. Below this is a list
+% of all the themes, uncomment each in turn to see what they look like.
+\usetheme{metropolis}
+%\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+%\usetheme{Madrid}
+
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Singapore}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+% As well as themes, the Beamer class has a number of color themes
+% for any slide theme. Uncomment each of these in turn to see how it
+% changes the colors of your current slide theme.
+
+%\usecolortheme{albatross}
+%\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{rose}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+
+%\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title[Short title]{GPU加速的docking } % The short title appears at the bottom of every slide, the full title is only on the title page
+
+\author{zenghui liu} % Your name
+\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+{ cms\\ % Your institution for the title page
+
+\medskip
+\textit{akakcolin@163.com} % Your email address
+}
+\date{\today} % Date, can be changed to a custom date
+
+
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}
+  \frametitle{\textbf{Outline 目录}}
+  \begin{enumerate}
+  \item 介绍动机目的
+  \item 文献调研
+  \item 具体实现
+  \item 结果测试
+  \item 总结
+  \item 
+\end{enumerate}
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+
+%------------------------------------------------
+\section{ADADELTA算法} % Sections can be created in order to organize your presentation into discrete blocks, all sections and subsections are automatically printed in the table of contents as an overview of the talk
+%------------------------------------------------
+一种优化方法
+SGD就是每一次迭代计算mini-batch的梯度，然后对参数进行更新，是最常见的优化方法了
+
+Adagrad其实是对学习率进行了一个约束。
+AdaGrad其实是对学习率进行了约束，AdaGrad独立地适应所有模型参数的学习率，缩放每个参数反比于其它所有梯度历史平方值总和的平方根。损失较大偏导的参数相应地拥有一个快速下降的学习率，而较小偏导的参数在学习率上有相对较小的下降。净效果是在参数空间中更为平缓的倾斜方向会取得更大的进步。参数更新公式为：
+
+\begin{equation}
+\left\{\begin{array}{l}
+g_{t}=\nabla_{\theta} J\left(\theta_{t}\right) \\
+n_{t}=n_{t-1}+g_{t}^{2} \\
+v_{t}=\frac{\eta}{\sqrt{n_{l}+\epsilon}} g_{t} \\
+\theta_{t+1}=\theta_{t}+v_{t}
+\end{array}\right.
+\end{equation}
+
+
+  前期$g_t$较小的时候， regularizer较大，能够放大梯度
+  后期$g_t$较大的时候，regularizer较小，能够约束梯度
+
+  缺点:
+  由公式可以看出，AdaGrad依赖于人工设置一个全局学习率  ，当  设置过大时，使regularizer过于敏感，对梯度的调节太大。在中后期，分母上梯度平方的累加将会越来越大，gradient→0，网络的更新能力会越来越弱，学习率会变的极小，使得训练提前结束。为了解决这样的问题，又提出了Adadelta算法。
+
+  Adadelta是对Adagrad的扩展，最初方案依然是对学习率进行自适应约束，但是进行了计算上的简化。 Adagrad会累加之前所有的梯度平方，而Adadelta只累加固定大小的项，并且也不直接存储这些项，仅仅是近似计算对应的平均值。即：
+
+  其中，[公式]代表求期望。
+
+此时，可以看出Adadelta已经不用依赖于全局学习率了。
+
+特点：
+
+训练初中期，加速效果不错，很快
+训练后期，反复在局部最小值附近抖动
+
+\subsection{Subsection Example} % A subsection can be created just before a set of slides with a common theme to further break down your presentation into chunks
+
+
+\begin{frame}
+\Huge{\centerline{The End}}
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}
