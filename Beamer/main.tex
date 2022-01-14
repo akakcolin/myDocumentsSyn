@@ -1,4 +1,3 @@
-
 \documentclass[xcolor=x11names,UTF8]{ctexbeamer}
 
 \graphicspath{{figures/}} % 图片路径
@@ -75,82 +74,479 @@
 %	TITLE PAGE
 %----------------------------------------------------------------------------------------
 
-\title[Short title]{GPU加速的docking } % The short title appears at the bottom of every slide, the full title is only on the title page
+\title[Short title]{【文献】Machine-learning accelerated geometry optimization in molecular simulation} % The short title appears at the bottom of every slide, the full title is only on the title page
 
 \author{zenghui liu} % Your name
-\institute[] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
-{ cms\\ % Your institution for the title page
+\institute[xtalpi] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+{ xtalpi\\ % Your institution for the title page
 
 \medskip
 \textit{akakcolin@163.com} % Your email address
 }
 \date{\today} % Date, can be changed to a custom date
 
-
-
 \begin{document}
 
 \maketitle
 
-\begin{frame}
-  \frametitle{\textbf{Outline 目录}}
-  \begin{enumerate}
-  \item 介绍动机目的
-  \item 文献调研
-  \item 具体实现
-  \item 结果测试
-  \item 总结
-  \item 
-\end{enumerate}
+%\begin{frame}
+%  \frametitle{\textbf{Outline 目录}}
+%  \begin{enumerate}
+%  \item 前言
+%  \item 文献
+%  \item 一些结果
+%  \item 总结
+%\end{enumerate}
+%\end{frame}
+
+\begin{frame}{前言}
+
+  \begin{itemize}
+  \item 得到最稳定(能量最低)的结构，找反应路径。
+  \item 优化算法一般用共轭梯度/BFGS
+  \item 速度观感：DFT：太慢了; DFTB：慢一点；MD: 快,
+  \item 期望：same work in less time | more work in the same time
+  \end{itemize}
 \end{frame}
 
-%----------------------------------------------------------------------------------------
-%	PRESENTATION SLIDES
-%----------------------------------------------------------------------------------------
+\begin{frame}{一些优化加速思路}
 
-%------------------------------------------------
-\section{ADADELTA算法} % Sections can be created in order to organize your presentation into discrete blocks, all sections and subsections are automatically printed in the table of contents as an overview of the talk
-%------------------------------------------------
-一种优化方法
-SGD就是每一次迭代计算mini-batch的梯度，然后对参数进行更新，是最常见的优化方法了
+    常规的
+    \begin{itemize}
+        \item  给一个好的初始猜测, precondition系列
+        \item  采用基于内坐标的优化（RIC)
+    \end{itemize}
 
-Adagrad其实是对学习率进行了一个约束。
-AdaGrad其实是对学习率进行了约束，AdaGrad独立地适应所有模型参数的学习率，缩放每个参数反比于其它所有梯度历史平方值总和的平方根。损失较大偏导的参数相应地拥有一个快速下降的学习率，而较小偏导的参数在学习率上有相对较小的下降。净效果是在参数空间中更为平缓的倾斜方向会取得更大的进步。参数更新公式为：
+    流行的机器学习方法(替代模型surrogate modeling)：
+    \begin{itemize}
+        \item Gaussian Process Regression (GPR)  高斯过程回归 ($O(n^2N^2)$)
+        \item Neural network (NN) ensemble based active learning
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{主要内容}
+  \begin{itemize}
+     \item Machine learning model for the surrogate models
+     \item Relaxation with active learning
+     \item Results and Discussion
+  \end{itemize}
+
+\end{frame}
+\begin{frame}{ML model}
+
+    在Behler Parrinello Neural Networks(BPNNs)基础上简化的SingleNN
+
+    \begin{figure}
+    \centering
+    \includegraphics[scale=0.4]{original-BPNN.png}
+    %\includegraphics[scale=0.25]{SingleNN-paper.png}
+    \caption{\small \textrm{BPNNs structure}}
+
+    \end{figure}
+
+\end{frame}
+
+\begin{frame}{ML model}
+BPNN方程指纹函数
 
 \begin{equation}
-\left\{\begin{array}{l}
-g_{t}=\nabla_{\theta} J\left(\theta_{t}\right) \\
-n_{t}=n_{t-1}+g_{t}^{2} \\
-v_{t}=\frac{\eta}{\sqrt{n_{l}+\epsilon}} g_{t} \\
-\theta_{t+1}=\theta_{t}+v_{t}
-\end{array}\right.
+G_{i}^{2}=\sum_{j=1}^{N_{\text {atom }}} e^{-\eta\left(R_{i j}-R_{s}\right)^{2}} \cdot f_{c}\left(R_{i j}\right) 
 \end{equation}
 
+\begin{equation}
+G_{i}^{4}=2^{1-\zeta} \sum_{j, k \neq i}\left[\left(1+\gamma \cdot \cos \theta_{i j k}\right)^{\zeta} \cdot e^{-\eta\left(R_{i j}^{2}+R_{i k}^{2}+R_{j k}^{2}\right)} \cdot f_{c}\left(R_{i j}\right) \cdot f_{c}\left(R_{i k}\right) \cdot f_{c}\left(R_{j k}\right)\right]
+\end{equation}
 
-  前期$g_t$较小的时候， regularizer较大，能够放大梯度
-  后期$g_t$较大的时候，regularizer较小，能够约束梯度
+\begin{equation}
+f(x)=\left\{\begin{array}{ll}
+\frac{1}{2}\left(\cos \left(\frac{\pi R_{i j}}{R_{c}}+1\right)\right), & \text { for } \quad R_{i j} \leq R_{c} \\
+0, & \text { otherwise. }
+\end{array}\right
+\end{equation}
+\end{frame}
 
-  缺点:
-  由公式可以看出，AdaGrad依赖于人工设置一个全局学习率  ，当  设置过大时，使regularizer过于敏感，对梯度的调节太大。在中后期，分母上梯度平方的累加将会越来越大，gradient→0，网络的更新能力会越来越弱，学习率会变的极小，使得训练提前结束。为了解决这样的问题，又提出了Adadelta算法。
+\begin{frame}{ML model}
 
-  Adadelta是对Adagrad的扩展，最初方案依然是对学习率进行自适应约束，但是进行了计算上的简化。 Adagrad会累加之前所有的梯度平方，而Adadelta只累加固定大小的项，并且也不直接存储这些项，仅仅是近似计算对应的平均值。即：
+    在Behler Parrinello Neural Networks(BPNNs)基础上简化的SingleNN
 
-  其中，[公式]代表求期望。
+\begin{figure}
+    \centering
+    %\includegraphics[scale=0.25]{original-BPNN.png}
+    \includegraphics[scale=0.4]{SingleNN-paper.png}
+    \caption{\small \textrm{SingleNN structure}}
+\end{figure}
 
-此时，可以看出Adadelta已经不用依赖于全局学习率了。
+\end{frame}
 
-特点：
+\begin{frame}{ML model}
 
-训练初中期，加速效果不错，很快
-训练后期，反复在局部最小值附近抖动
+\begin{equation}
+    w G_{i}^{2}=\sum_{j=1}^{N_{a t o m}} e^{-\eta\left(R_{i j}-R_{s}\right)^{2}} \cdot f_{c}\left(R_{i j}\right) \cdot W\left(z_{j}\right) 
+\end{equation}
+    
+\begin{equation}
+    w G_{i}^{4}=2^{1-\zeta} \sum_{j, k \neq i}\left[\left(1+\gamma \cdot \cos \theta_{i j k}\right)^{\zeta} \cdot e^{-\eta\left(R_{i j}^{2}+R_{i k}^{2}+R_{j k}^{2}\right)} \cdot f_{c}\left(R_{i j}\right) \cdot f_{c}\left(R_{i k}\right) \cdot f_{c}\left(R_{j k}\right) \cdot W\left(z_{j}, z_{k}\right)\right
+\end{equation}
 
-\subsection{Subsection Example} % A subsection can be created just before a set of slides with a common theme to further break down your presentation into chunks
+\end{frame}
 
+\begin{frame}{ML model}
+
+  \begin{equation}
+E_{i}=\left[\mathbf{W}^{(2)} f_{a}^{(2)}\left(\mathbf{W}^{(1)} f_{a}^{(1)}\left(\mathbf{W}^{(0)} \mathbf{g}_{i}+\mathbf{b}^{(0)}\right)+\mathbf{b}^{(1)}\right)+\mathbf{b}^{(2)}\right]_{e l_{i}}
+    \end{equation}
+
+    \begin{equation}
+    E_{tot} = \sum_i^N E_i
+\end{equation}
+
+\begin{equation}
+\mathbf{f}_{i}=-\frac{\partial E_{tot}}{\partial \mathbf{r}_{i}}
+\end{equation}
+
+mean square error (MSE) loss function
+\begin{equation}
+L=\frac{1}{N} \sum_{i}^{N}\left(E_{i}-\hat{E}_{i}\right)^{2}+\lambda \frac{1}{\sum_{i} M_{i}} \sum_{i}^{N} \sum_{j}^{M_{i}}\left(F_{i j}-\hat{F}_{i j}\right)^{2}
+\end{equation}
+
+    超参数数量减少了：BPNN 大概4446个参数，SingleNN : 846
+
+\end{frame}
+    %神经网络有2个隐藏层，每层50个神经元，激活函数tanh
+    %原子环境的特征表示用基于原子中心的对称方程表示（ACSF)
+
+\begin{frame}{ML model}
+  %训练/预测；
+
+    不确定性的衡量方式，方差近似估计：
+  \begin{equation}
+      T=\alpha \max _{i} \operatorname{Var}\left[E_{tot}^{i}\right]
+  \end{equation}
+
+  \begin{figure}
+    \includegraphics[scale=0.35]{figure2-uncertain.png}
+  \end{figure}
+
+  %  \begin{itemize}
+  %  \item With high probability, convergence of the training process is easy from a random
+  %    initialization
+  %    \item an overparameterized NN could lead to
+%dissimilar models with high probability only using different
+%random initialization
+%\end{itemize}
+
+    %如何避免/降低过拟合的问题:   early stopping
+
+    %\begin{itemize}
+    %  \item the surrogate model is only used when uncertainty is low
+    %  \item if the uncertainty exceeds a threshold, the data are augmented by new DFT data
+    %  \item the final minimum is always validated by DFT
+    %  \end{itemize}
+\end{frame}
+
+\begin{frame}{Relaxation with active learning}
+  \begin{figure}
+      \centering
+      \includegraphics[scale=0.3]{relax_with_online.png}
+  \end{figure}
+
+这个和大多数模型框架都很相似的
+
+%因为不相似原子环境可以用一个通用的NN 模型来表示 同时处理多个构型,额外的加速
+
+%Another benefit ofthe pooling is that it could be applied in a scalable way
+%不同构型共享一个替代模型，不需要为每个轨迹的训练单独分配资源计算
+
+    %Different configurations could share a common surrogate model
+    %and ddthere is no need to assign separate computing
+    %resources for the training of each trajectory
+
+\end{frame}
+\begin{frame}{Active learning for geometry optimization of single configuration}
+
+  \begin{figure}
+      \centering
+      \includegraphics[scale=0.3]{NN-surface-compare.png}
+  \end{figure}
+
+    \begin{itemize}
+        \item 替代模型需要少量的结构优化来得到 合理模型
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Further accelaration by information sharing among configurations and utilizing prior data}
+  \begin{figure}
+      \centering
+      \includegraphics[scale=0.35]{number-dft-call.png}
+  \end{figure}
+ acrolein/AgPd  about 193 DFT calls to converge without ML
+
+\end{frame}
+
+\begin{frame}{Further accelaration by information sharing among configurations and utilizing prior data}
+\begin{figure}
+      \centering
+      \includegraphics[scale=0.35]{NN-force.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{More complex systems and NEB calculations}
+\begin{figure}
+      \centering
+      \includegraphics[scale=0.35]{NN-cluster-compare.png}
+ \end{figure}
+\end{frame}
+
+\begin{frame}{More complex systems and NEB calculations}
+\begin{figure}
+      \centering
+      \includegraphics[scale=0.2]{NN-NEB.png}
+ \end{figure}
+
+\begin{figure}
+      \centering
+      \includegraphics[scale=0.3]{nn-table.png}
+ \end{figure}
+\end{frame}
+
+\begin{frame}{Limiting the training data to recent configurations for training efficiency}
+\begin{figure}
+      \includegraphics[scale=0.25]{NN-training-time.png}
+      \includegraphics[scale=0.25]{person-coeff.png}
+ \end{figure}
+
+\end{frame}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+        \item active learning with multiple configurations can
+        achieve further acceleration by sharing the information across different configurations using a common NN ensemble
+        \item active learning reduces the amount of DFT calls by $50-90\%$ based on systems
+        \item the acceleration is even more apparent ($∼98\%$)  in CI-NEB
+    \end{itemize}
+\end{frame}
 
 \begin{frame}
 \Huge{\centerline{The End}}
 \end{frame}
 
+\begin{frame}
+  \begin{figure}
+      \centering
+      \includegraphics[scale=0.3]{paper-title-neb-2019-gpr.png}
+  \end{figure}
+
+\end{frame}
+
+
+\begin{frame}{GPR过程}
+    高斯过程，预测
+    先验均值 和核函数
+    \begin{equation}
+f(x) \sim G P\left(\boldsymbol{\mu}, k\left(\boldsymbol{x}, \boldsymbol{x}^{\prime}\right)\right)
+\end{equation}
+$\m$u 代表先验的能量和力，这里初始为0。给一个训练集
+预测的均值和方差为
+\begin{equation}
+E[f(\boldsymbol{x} \mid D)]=\boldsymbol{k}(\boldsymbol{x})\left[\boldsymbol{K}\left(\boldsymbol{x}+\sigma_{n}^{2} \boldsymbol{I}\right)\right]^{-1} \boldsymbol{y}
+\end{equation}
+\begin{equation}
+V[f(\boldsymbol{x} \mid D)]=k(\boldsymbol{x}, \boldsymbol{x})-\boldsymbol{k}(\boldsymbol{x})^{T}\left[\boldsymbol{K}\left(\boldsymbol{x}+\sigma_{n}^{2} \boldsymbol{I}\right)\right]^{-1} \boldsymbol{k}(\boldsymbol{x})
+\end{equation}
+核函数的形式为
+\begin{equation}
+\boldsymbol{K}(\boldsymbol{x})=\left(\begin{array}{ll}
+\boldsymbol{K}_{e e}(\boldsymbol{x}, \boldsymbol{x}) & \boldsymbol{K}_{e f}(\boldsymbol{x}, \boldsymbol{x}) \\
+\boldsymbol{K}_{e f}(\boldsymbol{x}, \boldsymbol{x}) & \boldsymbol{K}_{f f}(\boldsymbol{x}, \boldsymbol{x})
+\end{array}\right)
+\end{equation}
+\end{frame}
+
+\begin{frame}{GPR过程}
+\begin{equation}
+k_{e e}\left(\boldsymbol{x}, \boldsymbol{x}^{\prime}\right)=\sigma_{f}^{2} \exp \left(-\frac{1}{2} \sum_{d=1}^{D} \frac{\left(x_{d}-x_{d}^{\prime}\right)^{2}}{l_{d}^{2}}\right)
+\end{equation}
+
+\begin{equation}
+\begin{array}{c}
+k_{f e}\left(\boldsymbol{x}, \boldsymbol{x}^{\prime}\right)=-\frac{\sigma_{f}^{2}\left(x_{d}-x_{d}^{\prime}\right)}{l_{d}^{2}} \exp \left(-\frac{1}{2} \sum_{j=1}^{D} \frac{\left(x_{j}-x_{j}^{\prime}\right)^{2}}{l_{j}^{2}}\right) \\
+k_{f f}\left(\boldsymbol{x}, \boldsymbol{x}^{\prime}\right)=\frac{-\sigma_{f}^{2}}{l_{d 1}^{2}}\left(\delta_{d_{1} d_{2}}-\frac{\left(x_{d 1}-x_{d 1}^{\prime}\right)\left(x_{d 2}-x_{d 2}^{\prime}\right)}{l_{d 1}^{2}}\right) \exp \left(-\frac{1}{2} \sum_{j=1}^{D} \frac{\left(x_{j}-x_{j}^{\prime}\right)^{2}}{l_{j}^{2}}\right)
+\end{array}
+\end{equation}
+
+\end{frame}
+
+\begin{frame}{最近几年的一些进展}
+
+  \begin{figure}
+      \centering
+      \includegraphics[scale=0.2]{paper-title-neb-2017.png}
+  \end{figure}
+
+  \begin{figure}
+      \centering
+      \includegraphics[scale=0.2]{paper-title.png}
+  \end{figure}
+
+% 通过抽样来产生一个代
+
+\end{frame}
+
+\begin{frame}
+% 通过抽样来产生一个代理模型，
+%然后在这个模型上进行优化。
+%理论上，如果这个模型足够精确的话，
+%那么该模型的最优解就是求解的最优解
+
+%    \begin{itemize}
+%        \item 更多的数据
+%    \end{itemize}
+  结构优化：一种加速策略是 给一个比较好的初始猜测
+  另一种方法是使用替代模型，该模型在计算上很便宜，但足够准确，可以在需要进行 DFT 计算之前使用便宜的模型采取许多步骤。
+  提出一个在线学习的方式来加速多个结构的同时优化
+  训练用于优化目标结构的替代模型，随着测试集的增加，训练时间增加，比单纯dft优化的时间还长
+  这个问题如何解决：
+  这是 GPR/DP方法共性问题
+  用一个local trainning set  足够来解决局部优化问题
+
+  另外一个是 主动学习的弛豫过程中的势函数
+
+  \begin{itemize}
+  \item relax from scratch
+  \item relax from a small sets
+  \item relax from a existing big sets
+
+  \end{itemize}
+  不同结构弛豫过程中的信息 可以彼此共享
+  最后看一下这套方案 在结构优化中的性能
+
+\end{frame}
+
+\begin{frame}
+  Machine learning model for the surrogate models
+
+  Behler Parrinello Neural Networks(BPNN)
+  基于修改版的BPNN，用一个NN网络加上不同的输出层权重来表示不同元素，
+  避免了每种元素都带一个nn网络，减少了训练参数，训练时间缩短
+
+  原子环境的特征表示用基于原子中心的对称方程表示（ACSF)
+
+  神经网络有2个隐藏层，每层50个神经元，激活函数tanh
+
+  数据集50个结构
+
+    \begin{itemize}
+    \item With high probability, convergence of the training process is easy from a random
+      initialization
+      \item an overparameterized NN could lead to
+dissimilar models with high probability only using different
+random initialization
+\end{itemize}
+
+    如何避免/降低过拟合的问题
+    early stopping
+
+    \begin{itemize}
+      \item the surrogate model is only used when uncertainty is low
+      \item if the uncertainty exceeds a threshold, the data are augmented by new DFT data
+      \item the final minimum is always validated by DFT
+
+      \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+
+  \begin{figure}
+      \centering
+      \includegraphics[scale=0.2]{singleNN.png}
+      \caption{\small \textrm{Single NN structure}}
+  \end{figure}
+
+  \begin{itemize}
+  \item SingleNN  用统一的NN来表示原子，需要的参数比BPNN少
+  \item Feature: atom-centered symmetry function (ACSF)
+  \item  The activation function used is tanh
+  \end{itemize}
+\end{frame}
+\begin{frame}
+   \begin{itemize}
+   \item the surrogate model is only used when uncertainty is low
+   \item if the uncertainty exceeds a threshold, the data are augmented by new DFT data
+   \item the final minimum is always validated by DFT
+   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  为测量模型预测的不确定性，用NN系综来做近似估计: 用10个NN,每个都有相同的结构
+  直觉是，
+  如果 NN 集成在测试配置上的方差与训练集中的方差相似，那么我们可以预期测试配置接近训练数据集的区域；
+  因此，我们可以预期与训练误差类似的误差。
+  如果离训练集中的最大方差很远，很可能发生了外推，我们要小心预测
+\end{frame}
+
+\begin{frame}
+  机器学习是一个数据驱动的方法：train/predict
+
+  训练模型 vs 结构优化?
+
+  训练过程 可能比纯粹的结构优化更耗时/资源 
+
+  local training dataset is ok
+
+  考虑3中场景
+  \begin{itemize}
+    \item relaxation from scratch
+    \item relaxation from a small dataset
+    \item relaxation from a large existing dataset
+  \end{itemize}
+
+  不同优化轨迹之间的信息可以相互共享来获得额外加速效果
+\end{frame}
+\begin{frame}
+  %数据量的问题，只做了结构优化一般跑几百个离子步就结束的问题
+ %\begin{figure}
+ %     \centering
+ %     \includegraphics[scale=0.5]{singleNN.png}
+ %     \caption{\small \textrm{Single NN structure}}
+ % \end{figure}
+
+  SingleNN  用统一的NN来表示原子，需要的参数比BPNN少
+  Feature: atom-centered symmetry function (ACSF)
+  The activation function used is tanh
+  监测每一步的模型预测结果，如果不确定性超过阀值，就调用dft来获得准确的能量/力，来修正模型
+
+    \begin{itemize}
+    \item 原子指纹 atomic fingerprints 不同原子处在相似局域环境中的能量
+    \item  如何处理不确定性
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+
+%  \item Gaussian Approximation Potentials (GAP)
+%  \item  Behler Parrinello Neural Networks(BPNNs)
+%  \end{itemize}
+
+    \begin{figure}
+           \includegraphics[scale=0.2]{original-BPNN.png}
+    \end{figure}
+    BPNN有2个主要缺点
+
+    不同元素的指纹不兼容，体系依赖，可以做一个通用的，维度会很大
+
+    带权重的对称方程来解决
+    不同元素的原子能来自不同的NN, 泛化能力有限；
+
+    输出层分享隐藏层的权重， 同时有元素依赖的权重，
+%
+    找到一个共同的指纹转换
+    不同元素数据同时利用另一个数据集的非线形层
+    对新数据 我只需训练输出层的线形权重， 这样可以减少训练时间和训练数据比较少
+
+    超参数数量 BPNN ([(14 + 1) × 20 + (20 + 1) × 20 + (20 + 1)] × 6 = 4446 parameters)
+    (14 + 1) × 20 + (20 + 1) × 20 + (20 + 1) × 6 = 846
+\end{frame}
 %----------------------------------------------------------------------------------------
 
 \end{document}
